@@ -210,7 +210,7 @@ const $ = id => document.getElementById(id);
 const player = $('player');
 // ---------- spaced-repetition state (persisted) ----------
 const KEY='en-srs-v2';
-const DAY=86400000, MIN_EASE=1.3, MAX_EASE=3.0, AGAIN_GAP=2, HARD_GAP=4, NEW_CAP=20;
+const DAY=86400000, MIN_EASE=1.3, MAX_EASE=3.0, AGAIN_GAP=0, HARD_GAP=2, NEW_CAP=20;
 let SCHED={}, NO_PERSIST=false;
 try{ const raw=localStorage.getItem(KEY); if(raw) SCHED=JSON.parse(raw); }catch(e){ NO_PERSIST=true; }
 function saveSched(){ try{ localStorage.setItem(KEY, JSON.stringify(SCHED)); }catch(e){ NO_PERSIST=true; } updateSaveNote(); }
