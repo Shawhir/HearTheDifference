@@ -210,43 +210,47 @@ const $ = id => document.getElementById(id);
 const player = $('player');
 // ---------- spaced-repetition state (persisted) ----------
 const KEY='en-srs-v2';
-const LEARN_STEPS=[1,10], GRAD_GOOD=1440, GRAD_EASY=5760, MIN_EASE=1.3, MAX_EASE=3.0;
+const DAY=86400000, MIN_EASE=1.3, MAX_EASE=3.0, AGAIN_GAP=2, HARD_GAP=4, NEW_CAP=20;
 let SCHED={}, NO_PERSIST=false;
 try{ const raw=localStorage.getItem(KEY); if(raw) SCHED=JSON.parse(raw); }catch(e){ NO_PERSIST=true; }
 function saveSched(){ try{ localStorage.setItem(KEY, JSON.stringify(SCHED)); }catch(e){ NO_PERSIST=true; } updateSaveNote(); }
 const now=()=>Date.now();
 const cidOf=c=> c.g+'|'+c.o1+'|'+c.o2+'>'+c.ans;
-function fmtIvl(m){ if(m<1) return '<1 min'; if(m<60) return Math.round(m)+' min'; if(m<1440) return Math.round(m/60)+' h'; return Math.round(m/1440)+' d'; }
+function fmtDays(d){ if(d<1) return '<1 d'; if(d<30) return Math.round(d)+' d'; return Math.round(d/7)+' wk'; }
 
-// pure scheduler: given an entry (or null) and a rating, return the new entry (ivl set, due not)
+// pure scheduler: entry (or null) + rating -> new entry. ivl is in DAYS for review.
+// state 'learning' = repeats within this session (Again / Hard); 'review' = days out.
 function grade(e0, rating){
-  const e = e0 ? Object.assign({},e0) : {ivl:0,ease:2.5,reps:0,lapses:0,state:'new',step:0};
-  if(e.state!=='review'){
-    if(rating==='again'){ e.step=0; e.ivl=LEARN_STEPS[0]; e.state='learning'; }
-    else if(rating==='hard'){ e.ivl=LEARN_STEPS[Math.min(e.step,LEARN_STEPS.length-1)]; e.state='learning'; }
-    else if(rating==='good'){
-      if(e.step>=LEARN_STEPS.length-1){ e.ivl=GRAD_GOOD; e.state='review'; e.step=0; }
-      else { e.step++; e.ivl=LEARN_STEPS[e.step]; e.state='learning'; }
-    } else { e.ivl=GRAD_EASY; e.state='review'; e.step=0; e.ease=Math.min(MAX_EASE,e.ease+0.15); }
-  } else {
-    if(rating==='again'){ e.lapses++; e.ease=Math.max(MIN_EASE,e.ease-0.2); e.step=0; e.ivl=LEARN_STEPS[0]; e.state='learning'; }
-    else if(rating==='hard'){ e.ease=Math.max(MIN_EASE,e.ease-0.15); e.ivl=Math.max(LEARN_STEPS[0], e.ivl*1.2); }
-    else if(rating==='good'){ e.ivl=e.ivl*e.ease; }
-    else { e.ease=Math.min(MAX_EASE,e.ease+0.15); e.ivl=e.ivl*e.ease*1.3; }
+  const e = e0 ? Object.assign({},e0) : {ivl:0,ease:2.5,reps:0,lapses:0,state:'new'};
+  const wasReview = e.state==='review';
+  if(rating==='again'){
+    if(wasReview) e.lapses=(e.lapses||0)+1;
+    e.ease=Math.max(MIN_EASE,(e.ease||2.5)-0.2); e.state='learning'; e.ivl=0;
+  } else if(rating==='hard'){
+    if(wasReview){ e.ease=Math.max(MIN_EASE,e.ease-0.15); e.ivl=Math.max(1,e.ivl*1.2); e.state='review'; }
+    else { e.state='learning'; e.ivl=0; }
+  } else if(rating==='good'){
+    e.ivl = wasReview ? Math.max(1,e.ivl*e.ease) : 1; e.state='review';
+  } else { // easy
+    e.ease=Math.min(MAX_EASE,(e.ease||2.5)+0.15);
+    e.ivl = wasReview ? Math.max(2,e.ivl*e.ease*1.3) : 4; e.state='review';
   }
   return e;
 }
-function previewIvl(c, rating){ return fmtIvl(grade(SCHED[cidOf(c)], rating).ivl); }
+function previewIvl(c, rating){ const e=grade(SCHED[cidOf(c)], rating); return e.state==='learning' ? 'soon' : fmtDays(e.ivl); }
 function applyRating(c, rating){
   const id=cidOf(c); const e=grade(SCHED[id], rating);
-  e.reps=(SCHED[id]?SCHED[id].reps:0)+1; e.due=now()+Math.round(e.ivl*60000);
+  e.reps=((SCHED[id]&&SCHED[id].reps)||0)+1;
+  e.due = e.state==='learning' ? now() : now()+Math.round(e.ivl*DAY);
   SCHED[id]=e; saveSched();
+  if(e.state==='learning'){ S.learn.push({c:c, at:S.pos+(rating==='again'?AGAIN_GAP:HARD_GAP)}); }
 }
 
 // ---------- session ----------
-let S={ srs:true, filter:'all', pool:[], introduced:0, newLimit:0, cur:null, opts:[],
-        answered:false, lastCorrect:false, streak:0, deck:[], idx:0,
-        stats:{done:0, correct:0, per:{}} };
+let S={ srs:true, filter:'all', pool:[], cur:null, opts:[],
+        answered:false, lastCorrect:false, streak:0,
+        pos:0, learn:[], reviewQueue:[], newQueue:[],
+        deck:[], idx:0, stats:{done:0, correct:0, per:{}} };
 
 $('filter').addEventListener('click', e=>{
   if(e.target.tagName!=='BUTTON') return;
@@ -258,30 +262,31 @@ $('begin').addEventListener('click', startQuiz);
 function startQuiz(){
   S.srs=$('srs').checked;
   S.pool=CARDS.filter(c=> S.filter==='all' || c.g===S.filter);
-  S.introduced=0; S.newLimit=S.pool.length; S.streak=0;
+  S.streak=0; S.pos=0; S.learn=[];
   S.stats={done:0, correct:0, per:{}};
   ['h','th','i','mix'].forEach(g=> S.stats.per[g]={right:0,total:0});
+  const n=now();
+  S.reviewQueue = S.pool.filter(c=>{const e=SCHED[cidOf(c)]; return e && e.due<=n;})
+                        .sort((a,b)=>SCHED[cidOf(a)].due-SCHED[cidOf(b)].due);
+  S.newQueue = shuffle(S.pool.filter(c=>!SCHED[cidOf(c)])).slice(0, NEW_CAP);
   show('quiz');
   if(S.srs){ serveNext(); }
-  else { S.deck=shuffle(S.pool.slice()); S.idx=0; serve(S.deck[0]); }
+  else { S.deck=shuffle(S.pool.slice()); S.idx=0; if(S.deck.length) serve(S.deck[0]); else finish(); }
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 function show(which){['start','quiz','results'].forEach(s=>$(s).classList.add('hidden'));const el=$(which);el.classList.remove('hidden');el.classList.remove('fade');void el.offsetWidth;el.classList.add('fade');}
 
 function nextCard(){
-  const n=now();
-  let due=S.pool.filter(c=>{const e=SCHED[cidOf(c)]; return e && e.due<=n;});
-  if(due.length){ due.sort((a,b)=>SCHED[cidOf(a)].due-SCHED[cidOf(b)].due); return due[0]; }
-  let news=S.pool.filter(c=>!SCHED[cidOf(c)]);
-  if(news.length && S.introduced<S.newLimit){ S.introduced++; return news[(Math.random()*news.length)|0]; }
-  let learn=S.pool.filter(c=>{const e=SCHED[cidOf(c)]; return e && e.state==='learning';});
-  if(learn.length){ learn.sort((a,b)=>SCHED[cidOf(a)].due-SCHED[cidOf(b)].due); return learn[0]; }
+  if(S.learn.length){ const i=S.learn.findIndex(x=>x.at<=S.pos); if(i>=0) return S.learn.splice(i,1)[0].c; }
+  if(S.reviewQueue.length) return S.reviewQueue.shift();
+  if(S.newQueue.length) return S.newQueue.shift();
+  if(S.learn.length){ S.learn.sort((a,b)=>a.at-b.at); return S.learn.shift().c; }
   return null;
 }
 function serveNext(){ const c=nextCard(); if(!c){ finish(); return; } serve(c); }
 
 function serve(c){
-  S.cur=c; S.answered=false;
+  S.cur=c; S.answered=false; S.pos++;
   const opts = Math.random()<.5 ? [c.o1,c.o2] : [c.o2,c.o1];
   S.opts=opts;
   $('grouppill').innerHTML='<span class="ph">'+GROUP[c.g].ipa+'</span>';
@@ -342,11 +347,7 @@ function advance(){ // practice mode (no scheduling)
 
 function updateCounts(){
   if(S.srs){
-    const n=now();
-    const due=S.pool.filter(c=>{const e=SCHED[cidOf(c)]; return e && e.due<=n;}).length;
-    const learn=S.pool.filter(c=>{const e=SCHED[cidOf(c)]; return e && e.state==='learning' && e.due>n;}).length;
-    const fresh=S.pool.filter(c=>!SCHED[cidOf(c)]).length;
-    $('counts').innerHTML='Due <b>'+(due+learn)+'</b> · New <b>'+fresh+'</b>';
+    $('counts').innerHTML='Due <b>'+(S.reviewQueue.length+S.learn.length)+'</b> · New <b>'+S.newQueue.length+'</b>';
   } else {
     $('counts').innerHTML='<b>'+(S.idx+1)+'</b> / '+S.deck.length;
   }
@@ -368,7 +369,7 @@ function finish(){
   if(S.srs){
     const n=now(); let soonest=Infinity;
     S.pool.forEach(c=>{const e=SCHED[cidOf(c)]; if(e && e.due>n) soonest=Math.min(soonest,e.due);});
-    line += soonest<Infinity ? ' Next review in '+fmtIvl((soonest-n)/60000)+'.' : ' Nothing queued right now.';
+    line += soonest<Infinity ? ' Next review in '+fmtDays((soonest-n)/DAY)+'.' : ' Nothing queued right now.';
   }
   $('rline').textContent = (st.done? st.done+' cards rated. ':'') + line;
   const bd=$('breakdown'); bd.innerHTML='';
