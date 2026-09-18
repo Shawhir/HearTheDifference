@@ -79,13 +79,45 @@ tools/theme-scrape.js   console script: lift another site's look into the tokens
 than a typeface name:
 
 ```css
---display: "Fraunces", Georgia, serif;   /* headings, the drilled words, the score */
---ui:      "Hanken Grotesk", system-ui, sans-serif;  /* everything functional */
+--display: Manrope, system-ui, sans-serif;  /* headings, the drilled words, the score */
+--ui:      Poppins, system-ui, sans-serif;  /* everything functional */
 ```
 
 Re-theming is therefore two lines plus the Google Fonts `<link>` in `index.html`
 and `editor.html`. Keep a real fallback stack on each token: a webfont that
 fails to load should degrade to something close, not to Times.
+
+Both faces come from cglangues.fr, which the drill is meant to sit alongside.
+The site sets body copy in Poppins and takes some headings in Manrope, and the
+two roles are kept apart on purpose: the drilled words are the thing you are
+being asked to look at, so they should not be in the same voice as the buttons.
+Setting `--display` to Poppins as well is a one-line change if you would rather
+they matched exactly. Manrope stops at 800, which is why the brand and the
+score are 800 rather than 900.
+
+## Where the colours came from
+
+`tools/theme-scrape.js` was run against cglangues.fr and its output is the
+`:root` block, with three adjustments this app needs and a marketing site does
+not:
+
+- The site's mint `#8dd9bf` is a fill, never a label. It sits at 1.5:1 on the
+  page and 1.6:1 under white, so the eleven rules that set text in the accent —
+  and the primary button — would have been unreadable. `--accent` keeps the
+  mint and now carries the progress rail; `--accent-deep` is the same hue
+  darkened until it carries text (4.6:1 on paper, 5.0:1 under white), and that
+  is what every label and every solid fill uses.
+- `--good-soft` and the new `--bad-soft` are the correct/wrong answer fills,
+  blended until the verdict text on them clears 4.5:1. The wrong-answer fill
+  used to be a hard-coded pink that belonged to the old warm palette.
+- `--radius` and `--shadow` carry the site's flatness: 10px corners and a soft,
+  shallow shadow in place of the hard offset blocks the old look used. The
+  paper grain went with them — it existed to make a warm paper feel like paper,
+  and against a flat grey it only reads as dirt.
+
+Contrast was checked for every pair that carries meaning. If you re-scrape
+against a different site, check the same ones: text on `--paper`, text on
+`--paper-2`, `--paper-2` on `--accent-deep`, and the two verdict fills.
 
 ## Matching another site's look
 
