@@ -370,9 +370,26 @@
       .then(function (w) { return w.write(bytes).then(function () { return w.close(); }); });
   }
 
+  /* Why writing in place might be unavailable. Brave ships the File System
+   * Access API behind a flag rather than not implementing it, so say that
+   * rather than the useless "this browser cannot". */
+  var ZIP_FALLBACK = 'Use “Download changes (.zip)” and unzip it over the project instead.';
+
+  function noPickerReason() {
+    var generic = 'This browser cannot write to a folder directly. ' + ZIP_FALLBACK;
+    var brave = 'Brave disables the File System Access API by default. Enable it at '
+      + 'brave://flags/#file-system-access-api (set to Enabled, then relaunch) and this will work. '
+      + 'Otherwise: ' + ZIP_FALLBACK;
+    if (navigator.brave && typeof navigator.brave.isBrave === 'function') {
+      return navigator.brave.isBrave().then(function (yes) { return yes ? brave : generic; })
+        .catch(function () { return generic; });
+    }
+    return Promise.resolve(generic);
+  }
+
   $('publish').addEventListener('click', function () {
     if (!window.showDirectoryPicker) {
-      msg($('topmsg'), 'This browser cannot write to a folder. Use “Download deck.zip” and unzip it over the project instead.', 'err');
+      noPickerReason().then(function (text) { msg($('topmsg'), text, 'err'); });
       return;
     }
     var files;

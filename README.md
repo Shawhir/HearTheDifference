@@ -108,6 +108,11 @@ Publishing turns the draft back into project files:
 - **Download changes (.zip)** — everywhere else. A zip laid out like the
   project; unzip it over the folder, then *Discard draft*.
 
+**Brave** ships the File System Access API but disables it by default, so
+*Publish to project…* is refused until you enable it at
+`brave://flags/#file-system-access-api` (set to Enabled, then relaunch). Firefox
+and Safari have not implemented it at all; there the zip is the only route.
+
 Validation is deliberately narrow and refuses only what would produce a broken
 card: two non-empty, distinct options, an answer that is one of them, and a
 group that exists.
