@@ -328,14 +328,11 @@
     }
     GROUPS = window.HTD.groupsById(DECK);
     CARDS = window.HTD.playable(DECK); // a card with no recording cannot be heard
-    var silent = (DECK.cards || []).length - CARDS.length;
 
+    // Cards still awaiting a recording, and whether this is an unpublished
+    // draft, are the deck owner's business and are not surfaced here: the drill
+    // is the public page and says nothing about how the deck is maintained.
     renderStart();
-    if (silent) {
-      $('needsaudio').classList.remove('hidden');
-      $('needsaudio-n').textContent = silent;
-    }
-    if (window.HTD.readDraft()) $('draftnote').classList.remove('hidden');
 
     $('filter').addEventListener('click', function (e) {
       if (e.target.tagName !== 'BUTTON') return;

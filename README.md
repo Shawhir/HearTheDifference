@@ -29,15 +29,29 @@ files and your progress stays in your own browser.
 
 ### A note on hosting the editor
 
-Publishing anything on Pages puts it on the public web, deck and editor alike.
-That is harmless here but worth understanding: there is no server and no
-database, so a visitor opening `editor.html` only ever edits a draft in their
-own browser. They cannot change what anyone else sees, and *Publish to
-project…* writes to a folder on their own machine. The published deck only ever
-changes when someone commits and pushes.
+The drill does not link to the editor and does not mention it. `editor.html` is
+the deck owner's page: reach it by typing the URL. Nothing on the public page
+advertises that it exists, so a learner following the site's link to the drill
+never sees a way in.
 
-The loop, once hosted, is: edit on the site → publish into your local clone →
-commit and push → Pages redeploys.
+That is a matter of presentation, not access. Publishing anything on Pages puts
+it on the public web, deck and editor alike, and `/editor.html` stays reachable
+to anyone who guesses it. This is harmless, and the reason is worth
+understanding rather than trusting: there is no server and no database, so a
+visitor opening the editor only ever edits a draft in their own browser. They
+cannot change what anyone else sees, and *Publish to project…* writes to a
+folder on their own machine. The published deck only ever changes when someone
+commits and pushes. If the page should not be reachable at all, it has to be
+kept out of what Pages serves — hiding the link cannot do it.
+
+The loop, once hosted, is: open `editor.html` yourself → publish into your local
+clone → commit and push → Pages redeploys.
+
+The drill prefers a draft over the published deck when one is present in the
+browser it is opened in. It used to say so on the page; that notice named the
+editor, so it is gone. The behaviour is unchanged, which means a draft in your
+own browser still shadows the published deck silently — clear it from the
+editor if the drill looks unexpectedly out of date.
 
 ### After publishing, the drill needs a reload
 
@@ -62,6 +76,7 @@ editor will say so and fall back to *Choose file…*.
 index.html            the drill
 editor.html           the deck editor
 assets/favicon.svg    site icon
+assets/cg-langues-logo.png  the school's mark, shown in the drill's topbar
 assets/css/app.css    shared shell: theme tokens, type, buttons, layout
 assets/css/editor.css editor-only styles
 assets/js/deck.js     shared data layer — load, audio lookup, draft, publish, zip
