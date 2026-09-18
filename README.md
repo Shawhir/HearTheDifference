@@ -14,15 +14,41 @@ Two pages, no build step, no dependencies:
 
 ## Running it
 
-Double-click `index.html`, or serve the folder (`python3 -m http.server 8000`)
-and open <http://localhost:8000>. Both work — see *Why the deck is a `.js` file*
-below. Nothing is uploaded anywhere; progress lives in your browser.
+Three ways, all of which work:
+
+1. **Double-click `index.html`.** No server, no install.
+2. **Serve the folder** — `python3 -m http.server 8000`, then
+   <http://localhost:8000>.
+3. **GitHub Pages.** The repo is a static site with no build step, so Pages can
+   serve it as-is from the default branch. Push, enable Pages in
+   *Settings → Pages* against `main` / root, and the drill is at the site root
+   with the editor at `/editor.html`.
+
+Nothing is uploaded anywhere in any of the three: the deck is fetched as static
+files and your progress stays in your own browser.
+
+### A note on hosting the editor
+
+Publishing anything on Pages puts it on the public web, deck and editor alike.
+That is harmless here but worth understanding: there is no server and no
+database, so a visitor opening `editor.html` only ever edits a draft in their
+own browser. They cannot change what anyone else sees, and *Publish to
+project…* writes to a folder on their own machine. The published deck only ever
+changes when someone commits and pushes.
+
+The loop, once hosted, is: edit on the site → publish into your local clone →
+commit and push → Pages redeploys.
+
+Microphone recording needs a secure context. HTTPS (Pages), `http://localhost`
+and `file://` all qualify; plain `http://` to a LAN address does not, and the
+editor will say so and fall back to *Choose file…*.
 
 ## Layout
 
 ```
 index.html            the drill
 editor.html           the deck editor
+assets/favicon.svg    site icon
 assets/css/app.css    shared shell: theme tokens, type, buttons, layout
 assets/css/editor.css editor-only styles
 assets/js/deck.js     shared data layer — load, audio lookup, draft, publish, zip
