@@ -70,6 +70,7 @@ assets/js/editor.js   the editor
 data/deck.js          the deck: groups + cards, audio referenced by path
 audio/<group>/*.mp3   the recordings
 tools/extract_audio.py  one-shot migration from the old single-file build
+tools/theme-scrape.js   console script: lift another site's look into the tokens above
 ```
 
 ## Changing the typeface
@@ -85,6 +86,38 @@ than a typeface name:
 Re-theming is therefore two lines plus the Google Fonts `<link>` in `index.html`
 and `editor.html`. Keep a real fallback stack on each token: a webfont that
 fails to load should degrade to something close, not to Times.
+
+## Matching another site's look
+
+`tools/theme-scrape.js` exists for the case where the drill is an add-on to a
+site that already has a look of its own, and should not arrive wearing this
+one. Open the site — the published one, not a builder preview, which sandboxes
+the page in an iframe the script cannot read — paste the whole file into the
+DevTools console, and it writes out two files:
+
+| | |
+|---|---|
+| `site-theme.css` | a `:root` block in the vocabulary above, to replace the one at the top of `app.css` |
+| `site-theme.json` | the full harvest — palette, type, radii, shadows, spacing, buttons, logo |
+
+It reads *computed* styles off elements that are actually on the page, so it
+does not care what the CSS looks like or what the classes are called; that
+matters on Wix, Squarespace and the like, where class names are hashed and
+change on every publish. Where a site states its own theme the script prefers
+that statement to the inference: Wix ships its palette as `--color_1`…`--color_36`
+and its theme fonts as `--font_0`…`--font_10`, and both are read when present.
+
+Some tokens are observed and some are derived, because a marketing site has no
+opinion about what a wrong answer looks like. Every one carries a comment in
+the output saying which it was, so the two or three worth a second look
+announce themselves — `--good` and `--bad` usually, since a site with no green
+and no red in its palette gets a pair built at the accent's own saturation.
+
+The JSON is the more durable half. It is not specific to this project, so it
+also serves any other add-on you dress to match the same site.
+
+Nothing is uploaded and nothing leaves the tab: the script reads the page you
+already have open and hands the two files to the browser's own download.
 
 ## The data
 
