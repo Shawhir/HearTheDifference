@@ -72,6 +72,20 @@ audio/<group>/*.mp3   the recordings
 tools/extract_audio.py  one-shot migration from the old single-file build
 ```
 
+## Changing the typeface
+
+`app.css` declares two type roles on `:root` and every rule uses those rather
+than a typeface name:
+
+```css
+--display: "Fraunces", Georgia, serif;   /* headings, the drilled words, the score */
+--ui:      "Hanken Grotesk", system-ui, sans-serif;  /* everything functional */
+```
+
+Re-theming is therefore two lines plus the Google Fonts `<link>` in `index.html`
+and `editor.html`. Keep a real fallback stack on each token: a webfont that
+fails to load should degrade to something close, not to Times.
+
 ## The data
 
 `data/deck.js` holds the whole deck:
