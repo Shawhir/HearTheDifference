@@ -387,29 +387,74 @@
     return Promise.resolve(generic);
   }
 
+  /* Read a deck.js already sitting in the target folder, so we can see what
+   * this publish would replace. Returns null if it is absent or unreadable. */
+  function readDeckAt(dir) {
+    return dir.getDirectoryHandle('data')
+      .then(function (d) { return d.getFileHandle('deck.js'); })
+      .then(function (fh) { return fh.getFile(); })
+      .then(function (file) { return file.text(); })
+      .then(function (text) {
+        var start = text.indexOf('{'), end = text.lastIndexOf('}');
+        if (start < 0 || end < start) return null;
+        try { return JSON.parse(text.slice(start, end + 1)); } catch (e) { return null; }
+      })
+      .catch(function () { return null; });
+  }
+
+  /* Publishing overwrites the deck wholesale, so refuse to do it silently when
+   * the folder is not the project, or when the write would drop cards. Both
+   * mistakes are easy to make and neither is obvious afterwards. */
+  function confirmTarget(dir, next) {
+    return dir.getFileHandle('index.html').then(function () { return true; })
+      .catch(function () {
+        return confirm('“' + dir.name + '” has no index.html, so it does not look like the '
+          + 'project folder. Write data/deck.js and the audio into it anyway?');
+      })
+      .then(function (ok) {
+        if (!ok) return false;
+        return readDeckAt(dir).then(function (existing) {
+          if (!existing || !existing.cards) return true;
+          var before = existing.cards.length, after = next.cards.length;
+          if (after >= before) return true;
+          return confirm('This would replace the deck in “' + dir.name + '”, which has '
+            + before + ' cards, with one that has ' + after + '. '
+            + (before - after) + ' card(s) would be lost. Continue?');
+        });
+      });
+  }
+
   $('publish').addEventListener('click', function () {
     if (!window.showDirectoryPicker) {
       noPickerReason().then(function (text) { msg($('topmsg'), text, 'err'); });
       return;
     }
-    var files;
+    var files, dirName;
     releaseFiles()
       .then(function (rel) {
         files = rel;
         return projectDir || window.showDirectoryPicker({ mode: 'readwrite' });
       })
       .then(function (dir) {
-        projectDir = dir;
-        return files.entries.reduce(function (chain, entry) {
-          return chain.then(function () { return writeInto(dir, entry.path, entry.bytes); });
-        }, Promise.resolve());
+        dirName = dir.name;
+        return confirmTarget(dir, files.deck).then(function (ok) {
+          if (!ok) return null;
+          projectDir = dir;
+          return files.entries.reduce(function (chain, entry) {
+            return chain.then(function () { return writeInto(dir, entry.path, entry.bytes); });
+          }, Promise.resolve()).then(function () { return true; });
+        });
       })
-      .then(function () {
+      .then(function (written) {
+        if (!written) { msg($('topmsg'), 'Nothing written.', ''); return; }
         // The draft is now on disk; clearing it means both pages read the
         // published deck again and the two cannot drift apart.
         deck = files.deck;
         H.clearDraft();
-        msg($('topmsg'), 'Published ' + files.entries.length + ' file(s) into the project. Commit them when you are happy.', 'ok');
+        msg($('topmsg'), 'Wrote ' + files.entries.length + ' file(s) into “' + dirName + '”: '
+          + files.entries.map(function (e) { return e.path; }).join(', ')
+          + '. Reload the drill to pick them up (Ctrl/Cmd+Shift+R if it still looks unchanged). '
+          + 'A hosted copy only changes once you commit and push.', 'ok');
         render();
       })
       .catch(function (err) {

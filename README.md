@@ -39,6 +39,19 @@ changes when someone commits and pushes.
 The loop, once hosted, is: edit on the site → publish into your local clone →
 commit and push → Pages redeploys.
 
+### After publishing, the drill needs a reload
+
+*Publish to project…* writes files to disk. It cannot reach into a page that is
+already open, so a drill tab loaded before the publish still holds the old deck
+until you reload it — hard-reload (Ctrl/Cmd+Shift+R) if a plain one is not
+enough, since the browser may have cached `data/deck.js`. A hosted copy needs a
+commit and push on top of that; publishing never touches a web server.
+
+Publishing replaces the deck wholesale, so it first checks that the folder you
+picked really is the project (it looks for `index.html`) and warns before a
+write that would leave fewer cards than the deck already on disk. If a publish
+ever does go wrong, `data/deck.js` is in git: `git checkout data/deck.js`.
+
 Microphone recording needs a secure context. HTTPS (Pages), `http://localhost`
 and `file://` all qualify; plain `http://` to a LAN address does not, and the
 editor will say so and fall back to *Choose file…*.
