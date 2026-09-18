@@ -31,17 +31,24 @@
 html,body{height:100%}
 body{font-family:var(--ui);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 .wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:32px 22px 64px;min-height:100%}
-.topbar{display:flex;align-items:baseline;justify-content:space-between;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:6px}
+/* The site puts its mark top left in a white band and runs the page grey
+ * underneath it. The bar breaks out of the column to span the viewport the
+ * same way, while its padding keeps the contents on the column's own edges.
+ * body already hides horizontal overflow, so 100vw cannot scroll the page. */
+.topbar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  width:100vw;margin:-32px calc(50% - 50vw) 26px;
+  padding:14px max(22px,calc(50vw - 358px)) 12px;
+  background:var(--paper-2);border-bottom:2px solid var(--ink)}
 .brand{font-family:var(--display);font-weight:800;font-size:clamp(22px,4.5vw,30px);letter-spacing:-.5px;line-height:1}
 .brand .sep{color:var(--accent-deep)}
-.tag{font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink-soft);font-weight:600}
+.tag{margin-left:auto;font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink-soft);font-weight:600}
 /* The school's mark, opposite the drill's own name. The topbar aligns its
  * children on the baseline, which an image has no useful one of, so this
  * centres itself instead. */
-.sitemark{flex:0 0 auto;align-self:center;line-height:0;opacity:.92;transition:opacity .15s}
+.sitemark{flex:0 0 auto;line-height:0;opacity:.94;transition:opacity .15s}
 .sitemark:hover{opacity:1}
-.sitemark img{display:block;height:56px;width:auto}
-@media(max-width:480px){.sitemark img{height:40px}}
+.sitemark img{display:block;height:72px;width:auto}
+@media(max-width:480px){.sitemark img{height:52px}}
 .lede{font-family:var(--display);font-size:clamp(28px,6.5vw,50px);line-height:1.04;font-weight:600;letter-spacing:-.5px;margin:34px 0 14px}
 .lede em{font-style:italic;color:var(--accent-deep)}
 .blurb{max-width:50ch;color:var(--ink-soft);font-size:16px;line-height:1.55;margin-bottom:30px}

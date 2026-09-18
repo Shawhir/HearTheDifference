@@ -130,6 +130,15 @@ not:
   paper grain went with them — it existed to make a warm paper feel like paper,
   and against a flat grey it only reads as dirt.
 
+The topbar follows the site's header rather than the drill's old one: the mark
+top left at the column's edge, the drill's name beside it, and the whole band
+white and full-width over a grey page. Sampling the site's own screenshot gave
+`#fefefe` for the header and `#f6f6f6` for the band under it, which is the
+`--paper-2` over `--paper` the scrape had already found. The bar breaks out of
+the 760px column with `100vw` and pads itself back to the column's edges, so
+the mark lines up with the text below it at every width; `body` already hides
+horizontal overflow, so that cannot scroll the page sideways.
+
 Contrast was checked for every pair that carries meaning. If you re-scrape
 against a different site, check the same ones: text on `--paper`, text on
 `--paper-2`, `--paper-2` on `--accent-deep`, and the two verdict fills.
