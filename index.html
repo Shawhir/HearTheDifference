@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hear the Difference — h · th · i</title>
+<meta name="description" content="A listening drill on English minimal pairs: /h/, voiced /ð/, and long vs short i.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span id="brand-title">Hear the Difference</span><span class="sep"> · </span><span class="brand-sub" id="brand-sub">h · th · i</span></div>
+    <div class="tag"><a href="editor.html">Edit deck</a></div>
+  </div>
+
+  <section id="start" class="fade">
+    <h1 class="lede">Train your ear for the sounds English <em>hides</em> in plain sight.</h1>
+    <p class="blurb"><b id="deck-size">0</b> recorded minimal pairs. You hear one word; you choose which of two near-identical spellings was actually said. The contrasts that trip up most learners:</p>
+    <div class="groups" id="groups"></div>
+    <p class="blurb hidden" id="needsaudio"><b id="needsaudio-n">0</b> more pairs are written but have no recording yet — add the audio in the <a href="editor.html">deck editor</a> and they join the drill.</p>
+    <p class="blurb hidden" id="draftnote">You are drilling an <b>unpublished draft</b> from the deck editor.</p>
+    <div class="controls">
+      <div class="seg" id="filter"></div>
+      <label class="toggle"><input type="checkbox" id="srs" checked> Spaced repetition</label>
+    </div>
+    <button class="btn btn-primary" id="begin">Begin listening →</button>
+  </section>
+
+  <section id="quiz" class="hidden">
+    <div class="meta">
+      <span class="pill" id="grouppill"></span>
+      <span class="stat" id="counts">—</span>
+      <span class="stat">Streak <b id="streak">0</b></span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="stage">
+      <button class="play" id="play" aria-label="Replay the recording">
+        <span class="ring"></span>
+        <svg id="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        <div class="eq hidden" id="eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      </button>
+      <p class="replay-hint"><kbd>R</kbd> replay · <kbd>1</kbd>/<kbd>2</kbd> answer · then <kbd>1</kbd>–<kbd>4</kbd> to rate</p>
+      <p class="prompt">Which word did you hear?</p>
+      <div class="opts">
+        <button class="opt" id="opt0"><span class="num">1</span><span class="mark"></span><span class="w"></span></button>
+        <button class="opt" id="opt1"><span class="num">2</span><span class="mark"></span><span class="w"></span></button>
+      </div>
+      <div class="feedback">
+        <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
+        <div class="rate" id="rate">
+          <button class="rbtn r-again" data-r="again">Again<small></small></button>
+          <button class="rbtn r-hard" data-r="hard">Hard<small></small></button>
+          <button class="rbtn r-good" data-r="good">Good<small></small></button>
+          <button class="rbtn r-easy" data-r="easy">Easy<small></small></button>
+        </div>
+        <div class="next" id="next"><button class="btn btn-next" id="nextbtn">Next →</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="hidden">
+    <h2 class="result-head">That's the set.</h2>
+    <div class="score-big"><span id="rpct">0</span><small>%</small></div>
+    <p class="blurb" id="rline" style="margin-top:10px"></p>
+    <div class="breakdown" id="breakdown"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="again">Run it again →</button>
+      <button class="btn btn-next" id="back" style="border-radius:2px">Change set</button>
+    </div>
+    <div class="controls" style="margin-top:26px">
+      <button class="mini" id="export">Export progress</button>
+      <button class="mini" id="import">Import</button>
+      <button class="mini" id="reset">Reset</button>
+      <input type="file" id="importfile" accept="application/json" hidden>
+      <span class="savenote" id="savenote"></span>
+    </div>
+  </section>
+
+  <footer>Built from an Anki deck of recorded minimal pairs (h · th · i). Audio ships alongside the page — works fully offline.</footer>
+</div>
+
+<audio id="player" preload="auto"></audio>
+<script src="data/deck.js"></script>
+<script src="assets/js/deck.js"></script>
+<script src="assets/js/quiz.js"></script>
+</body>
+</html>

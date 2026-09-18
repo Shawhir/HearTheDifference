@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deck editor — Hear the Difference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/editor.css">
+</head>
+<body>
+<div class="wrap wide">
+  <div class="topbar">
+    <div class="brand">Deck editor<span class="sep"> · </span><span class="brand-sub">hear the difference</span></div>
+    <div class="tag"><a href="index.html">← Back to the drill</a></div>
+  </div>
+
+  <p class="blurb" style="margin-top:22px">Write a pair, mark which one is actually said, attach the recording. Changes are kept as a draft in this browser and the drill picks them up straight away; publishing writes them back into the project files.</p>
+
+  <div class="ebar">
+    <span class="status" id="status">—</span>
+    <div class="controls" style="margin:0">
+      <button class="mini" id="publish">Publish to project…</button>
+      <button class="mini" id="downloadzip">Download changes (.zip)</button>
+      <button class="mini" id="revert">Discard draft</button>
+    </div>
+  </div>
+  <p class="msg" id="topmsg"></p>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Cards</h2>
+      <p class="hint">Sorted by group. A card with no recording is written but silent, and the drill skips it.</p>
+      <input class="search" type="search" id="search" placeholder="Filter by word, sentence or group…" aria-label="Filter cards">
+      <button class="btn btn-next" id="newcard" style="width:100%;margin-bottom:12px">+ New card</button>
+      <div class="cardlist" id="cardlist" role="list"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="formtitle">New card</h2>
+      <p class="hint">The two options are what the learner picks between; the answer is the one in the recording.</p>
+      <form id="cardform" novalidate>
+        <div class="field">
+          <label for="f-group">Contrast group</label>
+          <select id="f-group"></select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="f-o1">Option one</label>
+            <input type="text" id="f-o1" autocomplete="off" placeholder="heat">
+          </div>
+          <div class="field">
+            <label for="f-o2">Option two</label>
+            <input type="text" id="f-o2" autocomplete="off" placeholder="eat">
+          </div>
+        </div>
+        <div class="field">
+          <label>Which one is said?</label>
+          <div class="answerpick" id="f-answer">
+            <button type="button" data-i="0">—</button>
+            <button type="button" data-i="1">—</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Recording</label>
+          <div class="audiobox" id="audiobox">
+            <button type="button" class="mini" id="a-play">▶ Play</button>
+            <button type="button" class="mini" id="a-record">● Record</button>
+            <button type="button" class="mini" id="a-pick">Choose file…</button>
+            <input type="file" id="a-file" accept="audio/*" hidden>
+            <span class="name" id="a-name">No recording yet</span>
+            <button type="button" class="mini danger" id="a-clear">Remove</button>
+          </div>
+        </div>
+        <p class="msg" id="formmsg"></p>
+        <div class="rowbtns">
+          <button type="submit" class="btn btn-primary" style="font-size:15px;padding:12px 22px">Save card</button>
+          <button type="button" class="mini" id="cancel">Clear form</button>
+          <button type="button" class="mini danger" id="delete">Delete card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <details class="groups-ed">
+    <summary>Contrast groups</summary>
+    <p class="hint" style="margin-top:10px">These drive the filter buttons, the cards on the front page and the results breakdown. The id is what each card stores — renaming it would orphan cards, so it is fixed once created.</p>
+    <div id="grouplist"></div>
+    <div class="rowbtns"><button type="button" class="mini" id="newgroup">+ New group</button></div>
+  </details>
+
+  <footer>Draft cards live in this browser only (IndexedDB for the audio, localStorage for the text). Publish to write them into <code>data/deck.js</code> and <code>audio/</code>.</footer>
+</div>
+
+<audio id="preview"></audio>
+<script src="data/deck.js"></script>
+<script src="assets/js/deck.js"></script>
+<script src="assets/js/editor.js"></script>
+</body>
+</html>
