@@ -27,6 +27,53 @@ Three ways, all of which work:
 Nothing is uploaded anywhere in any of the three: the deck is fetched as static
 files and your progress stays in your own browser.
 
+## Installing it as an app
+
+Once the drill is served over HTTPS (GitHub Pages is enough), it can be
+installed like an app on phones and computers: its own icon, its own window
+with no browser bars, and it keeps working with no connection. Nothing goes
+through an app store.
+
+| Device | How |
+|---|---|
+| iPhone / iPad | open the site in **Safari** → Share → *Add to Home Screen* |
+| Android | open it in **Chrome** → ⋮ menu → *Install app* (or *Add to Home screen*) |
+| Windows / Mac | open it in **Chrome** or **Edge** → the install icon at the right of the address bar, or ⋮ → *Install Hear the Difference* |
+| Mac, Safari | File → *Add to Dock* |
+
+Only the drill is the app. The editor is not part of it: the installed app never
+links to it, never saves a copy of it, and never works offline for it.
+
+How it works:
+
+- `manifest.webmanifest` names the app and points at its icons.
+- `sw.js`, a service worker registered by `assets/js/app.js`, saves the drill
+  and every recording the deck names on first visit, then answers from that
+  copy whenever the network cannot. Pages, scripts and the deck are fetched
+  fresh whenever there is a connection, so **publishing and pushing a new deck
+  is all it takes to update everyone's app**: it shows on their next launch
+  with a connection. Recordings are served from the saved copy first and
+  refreshed in the background.
+- New recordings named by a newer deck are saved as soon as that deck arrives,
+  so they play offline without having been played online first.
+- `VERSION` at the top of `sw.js` exists to throw every saved copy away. Routine
+  deck and code changes do not need it bumped.
+
+Opening `index.html` straight off disk is unchanged: service workers need
+http(s), so off disk the app layer switches itself off.
+
+Progress lives in the browser the app runs in, as before. On a phone or
+computer that is the app's own storage; *Export progress* moves it between
+devices. On your own machine, an installed drill shares storage with the
+browser it was installed from — so an editor draft in that browser shadows the
+published deck there too (see below).
+
+The icons are `assets/icons/`: `icon-192.png` and `icon-512.png` are
+`assets/favicon.svg` rendered at those sizes; `icon-maskable-512.png` (512) and
+`apple-touch-icon.png` (180) are `assets/icons/icon-maskable.svg`, which is the
+same mark shrunk into the middle so a launcher can crop it to a circle without
+clipping it. Re-export them from the SVGs with any converter if the mark changes.
+
 ### A note on hosting the editor
 
 The drill does not link to the editor and does not mention it. `editor.html` is
@@ -76,6 +123,12 @@ editor will say so and fall back to *Choose file…*.
 index.html            the drill
 editor.html           the deck editor
 assets/favicon.svg    site icon
+assets/icons/         app icons (PNG) and the maskable icon's SVG source
+assets/fonts/         Manrope and Poppins, served locally so the app works offline
+assets/css/fonts.css  the @font-face rules for those files
+assets/js/app.js      registers the service worker (drill only)
+manifest.webmanifest  app name, colours and icons for installing
+sw.js                 service worker: offline copy of the drill and recordings
 assets/cg-langues-logo.png  the school's mark, shown in the drill's topbar
 assets/css/app.css    shared shell: theme tokens, type, buttons, layout
 assets/css/editor.css editor-only styles
@@ -98,8 +151,11 @@ than a typeface name:
 --ui:      Poppins, system-ui, sans-serif;  /* everything functional */
 ```
 
-Re-theming is therefore two lines plus the Google Fonts `<link>` in `index.html`
-and `editor.html`. Keep a real fallback stack on each token: a webfont that
+Re-theming is therefore two lines plus the font files. The faces are served
+from `assets/fonts/` rather than Google Fonts, so the installed app looks right
+offline: swapping one means dropping its `.woff2` files in there, pointing
+`assets/css/fonts.css` at them, and listing them in `CORE` in `sw.js` so they
+are saved for offline use. Keep a real fallback stack on each token: a webfont that
 fails to load should degrade to something close, not to Times.
 
 Both faces come from cglangues.fr, which the drill is meant to sit alongside.
