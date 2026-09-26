@@ -68,11 +68,20 @@ devices. On your own machine, an installed drill shares storage with the
 browser it was installed from — so an editor draft in that browser shadows the
 published deck there too (see below).
 
-The icons are `assets/icons/`: `icon-192.png` and `icon-512.png` are
-`assets/favicon.svg` rendered at those sizes; `icon-maskable-512.png` (512) and
-`apple-touch-icon.png` (180) are `assets/icons/icon-maskable.svg`, which is the
-same mark shrunk into the middle so a launcher can crop it to a circle without
-clipping it. Re-export them from the SVGs with any converter if the mark changes.
+The icons in `assets/icons/` are the swirl from the CG Langues logo, without
+the lettering. `cg-swirl.png` is the master: the swirl alone on a transparent
+background at 1024px, cut from the full logo. Every other icon is drawn from it:
+
+| File | Size | For |
+|---|---|---|
+| `cg-favicon-64.png` | 64 | the browser tab, on both pages |
+| `cg-icon-192.png`, `cg-icon-512.png` | 192, 512 | desktop and general app icon, transparent |
+| `cg-icon-maskable-512.png` | 512 | Android, which crops icons to its own shape: the swirl sits small in the middle of a white square so no crop clips it |
+| `cg-apple-touch-icon.png` | 180 | iPhone and iPad home screen, on white (iOS fills transparency with black) |
+
+When changing the icon, give the new files new names rather than overwriting
+these. Browsers that already installed the app only notice an icon change when
+the manifest points at a different file.
 
 ### A note on hosting the editor
 
@@ -122,8 +131,7 @@ editor will say so and fall back to *Choose file…*.
 ```
 index.html            the drill
 editor.html           the deck editor
-assets/favicon.svg    site icon
-assets/icons/         app icons (PNG) and the maskable icon's SVG source
+assets/icons/         app and tab icons, and the swirl they are drawn from
 assets/fonts/         Manrope and Poppins, served locally so the app works offline
 assets/css/fonts.css  the @font-face rules for those files
 assets/js/app.js      registers the service worker (drill only)

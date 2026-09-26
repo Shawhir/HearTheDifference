@@ -16,7 +16,7 @@
  */
 'use strict';
 
-var VERSION = 'htd-v1';
+var VERSION = 'htd-v2';
 
 var CORE = [
   './',
@@ -28,12 +28,12 @@ var CORE = [
   'assets/js/app.js',
   'assets/css/app.css',
   'assets/css/fonts.css',
-  'assets/favicon.svg',
   'assets/cg-langues-logo.png',
-  'assets/icons/icon-192.png',
-  'assets/icons/icon-512.png',
-  'assets/icons/icon-maskable-512.png',
-  'assets/icons/apple-touch-icon.png',
+  'assets/icons/cg-favicon-64.png',
+  'assets/icons/cg-icon-192.png',
+  'assets/icons/cg-icon-512.png',
+  'assets/icons/cg-icon-maskable-512.png',
+  'assets/icons/cg-apple-touch-icon.png',
   'assets/fonts/manrope-latin-wght-normal.woff2',
   'assets/fonts/manrope-latin-ext-wght-normal.woff2',
   'assets/fonts/poppins-latin-400-normal.woff2',
