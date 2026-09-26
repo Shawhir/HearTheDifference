@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- favicon.svg's mark, shrunk into the central safe zone so a launcher can
+       crop it to a circle, squircle or rounded square without clipping it. -->
+  <rect width="32" height="32" fill="#f3ece0"/>
+  <g transform="translate(16 16) scale(.68) translate(-17.25 -16)">
+    <circle cx="10" cy="16" r="4" fill="#211d18"/>
+    <g fill="none" stroke="#c0492f" stroke-width="2.4" stroke-linecap="round">
+      <path d="M17 11a7 7 0 0 1 0 10"/>
+      <path d="M22 7.5a13 13 0 0 1 0 17"/>
+    </g>
+  </g>
+</svg>
