@@ -25,20 +25,25 @@ listening progress is stored separately and is not affected.
 
 ## The two kinds of deck
 
-**Picture cards** (`"kind": "picture"`). The front shows the picture, or the
-hint when a word has no picture. The back shows the word, the hint, and a
-*Hear it* button when there is a recording. Learners can turn the deck round
-(*Word → picture*).
+**Picture cards** (`"kind": "picture"`). A card with two sides that turns
+over when tapped (or with Space). The front shows the picture, or the hint
+when a word has no picture. The back shows the word, the hint, and a *Hear it*
+button when there is a recording. After it has turned, further taps turn it
+back and forth so both sides can be looked at again before rating. Learners
+can turn the deck round (*Word → picture*). The turn is a CSS 3D flip; with
+the system's *reduce motion* setting on, it switches without the animation.
 
 - `hint` is a translation (*une pomme*) or a sentence with a gap for words that
   can't be drawn (*I stayed at home ___ it was raining.*). A sentence with a
-  gap is set larger when it is the front of the card.
+  gap is set larger when it is the front of the card, and on the back the gap
+  is filled in with the word.
 - A card needs a word, plus a picture or a hint. Anything less stays in the
   deck but is left out of study, and the editor marks it *incomplete*.
 
 **Verb forms** (`"kind": "verb"`). The front shows the base form and its
 meaning. Learners either type the past simple (and the past participle, when
-the deck asks for it) and have it checked, or just flip the card.
+the deck asks for it) and have it checked on a flat card, or flip the card
+over to see the forms.
 
 - Several accepted spellings go in one field, separated by a slash:
   `learned / learnt`. Checking ignores case and extra spaces.

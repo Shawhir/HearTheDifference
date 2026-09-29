@@ -155,9 +155,9 @@
     });
   }
 
-  function picture(c) {
+  function picture(c, alt) {
     var img = el('img');
-    img.alt = st.revealed ? c.word : 'Picture to name';
+    img.alt = alt;
     mediaInto(c.image, function (u) { img.src = u; });
     return img;
   }
@@ -177,30 +177,42 @@
     });
   }
 
+  var GAP = /_{2,}/;
+
   /* The hint is a translation or a sentence with a gap ("___"). A sentence
-   * reads better set larger when it is the whole front of the card. */
+   * reads better set larger when it is the whole front of the card; on the
+   * answer side the gap is filled in with the word. */
   function hintEl(text, asFront) {
-    return el('div', asFront && /_{2,}/.test(text) ? 'gap' : 'hint', text);
+    return el('div', asFront && GAP.test(text) ? 'gap' : 'hint', text);
   }
 
-  function renderPicture(face, c) {
-    var pictureFirst = st.mode === 'picture';
-    if (pictureFirst) {
-      if (c.image) face.appendChild(picture(c)); else face.appendChild(hintEl(c.hint, true));
+  function filledHint(c) {
+    if (!GAP.test(c.hint)) return hintEl(c.hint);
+    var parts = c.hint.split(GAP), d = el('div', 'gap');
+    parts.forEach(function (part, i) {
+      if (i) d.appendChild(el('b', '', c.word));
+      d.appendChild(document.createTextNode(part));
+    });
+    return d;
+  }
+
+  /* Fills the two sides of the card. Both are built when the card is dealt,
+   * so the picture has loaded by the time the card turns over. */
+  function renderPicture(front, back, c) {
+    if (st.mode === 'picture') {
+      if (c.image) front.appendChild(picture(c, 'Picture to name'));
+      else front.appendChild(hintEl(c.hint, true));
+      back.appendChild(el('div', 'big', c.word));
+      if (c.hint) back.appendChild(filledHint(c));
+      if (c.audio) back.appendChild(sayButton(c));
     } else {
-      face.appendChild(el('div', 'big', c.word));
-      if (c.audio) face.appendChild(sayButton(c));
+      front.appendChild(el('div', 'big', c.word));
+      if (c.audio) front.appendChild(sayButton(c));
+      if (c.image) back.appendChild(picture(c, c.word));
+      if (c.hint) back.appendChild(filledHint(c));
     }
-    if (!st.revealed) { face.appendChild(el('div', 'tap', 'Tap to show the answer')); return; }
-    face.appendChild(el('hr', 'rule'));
-    if (pictureFirst) {
-      face.appendChild(el('div', 'big', c.word));
-      if (c.image && c.hint) face.appendChild(hintEl(c.hint));
-      if (c.audio) face.appendChild(sayButton(c));
-    } else {
-      if (c.image) face.appendChild(picture(c));
-      if (c.hint) face.appendChild(hintEl(c.hint, !c.image));
-    }
+    front.appendChild(el('div', 'tap', 'Tap to turn the card over'));
+    back.appendChild(el('div', 'tap', 'Tap to turn it back'));
   }
 
   function forms(c) {
@@ -217,45 +229,70 @@
     return !!g && String(expected).split(/[\/,]/).some(function (x) { return norm(x) === g; });
   }
 
-  function renderVerb(face, c) {
+  function renderTyping(face, c) {
     face.appendChild(el('div', 'big', c.base));
     if (c.meaning) face.appendChild(el('div', 'hint', c.meaning));
+    var box = el('div', 'forms');
+    forms(c).forEach(function (f) {
+      var wrap = el('div');
+      var lab = el('label', '', f[1]);
+      var input = el('input');
+      input.id = 'in-' + f[0];
+      lab.htmlFor = input.id;
+      input.autocomplete = 'off'; input.autocapitalize = 'off'; input.spellcheck = false;
+      input.setAttribute('autocorrect', 'off');
+      input.dataset.expect = f[2];
+      wrap.appendChild(lab); wrap.appendChild(input); wrap.appendChild(el('div', 'fix'));
+      box.appendChild(wrap);
+    });
+    face.appendChild(box);
+  }
 
-    if (st.mode === 'type') {
-      var box = el('div', 'forms');
-      forms(c).forEach(function (f) {
-        var wrap = el('div');
-        var lab = el('label', '', f[1]);
-        var input = el('input');
-        input.id = 'in-' + f[0];
-        lab.htmlFor = input.id;
-        input.autocomplete = 'off'; input.autocapitalize = 'off'; input.spellcheck = false;
-        input.setAttribute('autocorrect', 'off');
-        input.dataset.expect = f[2];
-        wrap.appendChild(lab); wrap.appendChild(input); wrap.appendChild(el('div', 'fix'));
-        box.appendChild(wrap);
-      });
-      face.appendChild(box);
-      return;
-    }
+  function renderVerb(front, back, c) {
+    front.appendChild(el('div', 'big', c.base));
+    if (c.meaning) front.appendChild(el('div', 'hint', c.meaning));
+    front.appendChild(el('div', 'tap', 'Tap to turn the card over'));
 
-    if (!st.revealed) { face.appendChild(el('div', 'tap', 'Tap to show the forms')); return; }
-    face.appendChild(el('hr', 'rule'));
+    back.appendChild(el('div', 'formlabels', 'Base form'));
+    back.appendChild(el('div', 'hint', c.base));
     var line = el('div', 'formline');
     forms(c).forEach(function (f, i) {
       if (i) line.appendChild(el('span', '', '·'));
       line.appendChild(document.createTextNode(f[2]));
     });
-    face.appendChild(line);
-    face.appendChild(el('div', 'formlabels', forms(c).map(function (f) { return f[1]; }).join(' · ')));
+    back.appendChild(line);
+    back.appendChild(el('div', 'formlabels', forms(c).map(function (f) { return f[1]; }).join(' · ')));
+    back.appendChild(el('div', 'tap', 'Tap to turn it back'));
   }
 
+  /* Typing verbs stays a single flat card: the learner's answers and the
+   * corrections sit together on it. Everything else is a card with two
+   * sides that turns over. */
   function render() {
     var c = st.cur, face = $('face');
     releaseURLs();
     face.innerHTML = '';
-    face.classList.toggle('revealed', st.revealed || typing());
-    if (deck.kind === 'verb') renderVerb(face, c); else renderPicture(face, c);
+    if (typing()) {
+      face.className = 'face revealed';
+      renderTyping(face, c);
+      return;
+    }
+    face.className = 'flipcard';
+    var inner = el('div', 'inner');
+    var front = el('div', 'side front');
+    var back = el('div', 'side back');
+    back.setAttribute('aria-hidden', 'true');
+    inner.appendChild(front); inner.appendChild(back);
+    face.appendChild(inner);
+    if (deck.kind === 'verb') renderVerb(front, back, c); else renderPicture(front, back, c);
+  }
+
+  function turn(toBack) {
+    var face = $('face');
+    face.classList.toggle('flipped', toBack);
+    face.querySelector('.front').setAttribute('aria-hidden', toBack ? 'true' : 'false');
+    face.querySelector('.back').setAttribute('aria-hidden', toBack ? 'false' : 'true');
+    face.setAttribute('aria-label', toBack ? 'Turn the card back' : 'Turn the card over');
   }
 
   function typing() { return deck.kind === 'verb' && st.mode === 'type'; }
@@ -265,7 +302,7 @@
     $('verdict').className = 'verdict'; $('verdict').textContent = '';
     $('rate').classList.remove('show'); $('next').classList.remove('show');
     $('reveal').classList.remove('hidden');
-    $('reveal').textContent = typing() ? 'Check' : 'Show answer';
+    $('reveal').textContent = typing() ? 'Check' : 'Turn over';
     counts();
     render();
     if (typing()) { var first = $('face').querySelector('input'); if (first) first.focus(); }
@@ -276,7 +313,7 @@
     if (st.revealed || !st.cur) return;
     if (typing()) { check(); return; }
     st.revealed = true;
-    render();
+    turn(true);
     if (deck.kind === 'picture' && st.mode === 'picture') play(st.cur);
     afterReveal();
   }
@@ -352,9 +389,12 @@
   $('begin').addEventListener('click', begin);
   $('again').addEventListener('click', function () { renderStart(); begin(); });
   $('reveal').addEventListener('click', reveal);
+  /* Before rating, a tap turns the card over; after that, taps turn it back
+   * and forth so the learner can look at both sides again. */
   $('face').addEventListener('click', function (e) {
     if (e.target.tagName === 'INPUT' || typing()) return;
-    reveal();
+    if (!st.revealed) reveal();
+    else turn(!$('face').classList.contains('flipped'));
   });
   $('nextbtn').addEventListener('click', function () { st.done++; next(); });
   $('rate').addEventListener('click', function (e) {
