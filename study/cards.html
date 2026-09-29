@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cards — Hear the Difference</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="icon" href="../assets/icons/cg-favicon-64.png" type="image/png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../assets/icons/cg-apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="css/study.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="sitemark" href="https://www.cglangues.fr/"><img src="../assets/cg-langues-logo.png" alt="CG Langues" width="242" height="200"></a>
+    <div class="brand"><span id="decktitle">Cards</span></div>
+    <div class="backlink"><a href="index.html">← All decks</a></div>
+  </div>
+
+  <section id="start" class="fade">
+    <h1 class="lede" id="lede"></h1>
+    <p class="blurb" id="deckblurb"></p>
+    <p class="dueline" id="dueline"></p>
+    <div class="opts2">
+      <div class="seg" id="mode"></div>
+      <label class="toggle"><input type="checkbox" id="srs" checked> Spaced repetition</label>
+    </div>
+    <button class="btn btn-primary" id="begin">Start →</button>
+  </section>
+
+  <section id="study" class="hidden">
+    <div class="meta">
+      <span class="pill" id="pill"></span>
+      <span class="stat" id="counts">—</span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="flash">
+      <div class="face" id="face" tabindex="0" role="button" aria-label="Show the answer"></div>
+      <div class="actions">
+        <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
+        <button class="btn btn-next" id="reveal">Show answer</button>
+        <div class="rate" id="rate">
+          <button class="rbtn r-again" data-r="again">Again<small></small></button>
+          <button class="rbtn r-hard" data-r="hard">Hard<small></small></button>
+          <button class="rbtn r-good" data-r="good">Good<small></small></button>
+          <button class="rbtn r-easy" data-r="easy">Easy<small></small></button>
+        </div>
+        <div class="next" id="next"><button class="btn btn-next" id="nextbtn">Next →</button></div>
+      </div>
+      <p class="replay-hint" style="margin-top:22px"><kbd>Space</kbd> show answer · then <kbd>1</kbd>–<kbd>4</kbd> to rate</p>
+    </div>
+  </section>
+
+  <section id="results" class="hidden">
+    <h2 class="result-head">That's the set.</h2>
+    <p class="blurb" id="rline" style="margin-top:10px"></p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="again">Go again →</button>
+      <a class="btn btn-next" href="index.html" style="text-decoration:none;display:inline-block">All decks</a>
+    </div>
+  </section>
+</div>
+
+<audio id="player" preload="auto"></audio>
+<script src="data/study.js"></script>
+<script src="js/study.js"></script>
+<script src="js/cards.js"></script>
+</body>
+</html>

@@ -12,6 +12,11 @@ Two pages, no build step, no dependencies:
 | `index.html` | the drill |
 | `editor.html` | add and edit cards, attach or record audio, publish back to the project |
 
+There is also an optional **vocabulary & grammar section** in `study/`:
+picture cards, verb forms and grammar sheets, with its own editor. It is
+self-contained, and removing it means deleting that folder and one marked line
+in `index.html`. See [`study/README.md`](study/README.md).
+
 ## Running it
 
 Three ways, all of which work:
@@ -147,6 +152,7 @@ data/deck.js          the deck: groups + cards, audio referenced by path
 audio/<group>/*.mp3   the recordings
 tools/extract_audio.py  one-shot migration from the old single-file build
 tools/theme-scrape.js   console script: lift another site's look into the tokens above
+study/                  optional vocabulary & grammar section (see study/README.md)
 ```
 
 ## Changing the typeface

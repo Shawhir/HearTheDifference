@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary &amp; grammar — Hear the Difference</title>
+<meta name="description" content="Picture cards, verb forms and short grammar sheets.">
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="icon" href="../assets/icons/cg-favicon-64.png" type="image/png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../assets/icons/cg-apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="css/study.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="sitemark" href="https://www.cglangues.fr/"><img src="../assets/cg-langues-logo.png" alt="CG Langues" width="242" height="200"></a>
+    <div class="brand">Vocabulary<span class="sep"> · </span><span class="brand-sub">&amp; grammar</span></div>
+    <div class="backlink"><a href="../index.html">← Listening drill</a></div>
+  </div>
+
+  <section class="fade">
+    <h1 class="lede">Words you can <em>see</em>, forms you can <em>say</em>.</h1>
+    <p class="blurb">Pick a deck. Cards you find hard come back sooner; the ones you know wait longer.</p>
+
+    <h2 class="sect">Card decks</h2>
+    <div class="decks" id="decks"></div>
+
+    <h2 class="sect">Grammar sheets</h2>
+    <div class="sheets" id="sheets"></div>
+
+    <div class="controls" style="margin-top:34px">
+      <button class="mini" id="export">Export progress</button>
+      <button class="mini" id="import">Import</button>
+      <button class="mini" id="reset">Reset</button>
+      <input type="file" id="importfile" accept="application/json" hidden>
+      <span class="savenote" id="savenote"></span>
+    </div>
+  </section>
+
+  <footer>Progress is saved on this device only. <i>Export progress</i> moves it to another one.</footer>
+</div>
+
+<script src="data/study.js"></script>
+<script src="js/study.js"></script>
+<script src="js/menu.js"></script>
+</body>
+</html>
