@@ -61,3 +61,4 @@ details.groups-ed summary{font-family:var(--display);font-size:18px;font-weight:
 .wrow .wt small.tts{color:var(--bad)}
 .wrow .wt small.own{color:var(--good)}
 .wrow .btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.cardwords{max-height:none}

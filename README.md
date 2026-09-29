@@ -338,8 +338,9 @@ history to reproduce the split.
 
 ## Comparing the pair
 
-Once the learner has answered, a button appears under each option to play
-that word, so the two can be heard side by side. Each word uses, in order:
+Once the learner has answered, clicking either word plays it, and a button
+under each option does the same, so the two can be heard side by side. Each
+word uses, in order:
 
 1. a recording made for comparing, in the editor's *Word recordings for
    comparing* section, stored in `data/deck.js` under `words` and published to
@@ -352,7 +353,9 @@ that word, so the two can be heard side by side. Each word uses, in order:
 Of the 94 words in the pairs, 75 already play a real recording through
 their cards. The editor section lists the rest (tick *Only words using the
 computer voice*) with **Record** and **Choose file…** on each, and also lets
-any word be given a better take than its card's.
+any word be given a better take than its card's. The same controls sit on
+every card in the editor, under *Words for comparing*, for that card's two
+words; a recording made there is kept at once, without saving the card.
 
 ```js
 "words": { "hair": "audio/words/hair.mp3" }
@@ -362,5 +365,5 @@ Keys are the word as written, lower-cased, with spaces tidied.
 
 ## Keyboard
 
-`R` replay · `1`/`2` answer · then `A`/`B` to hear each word of the pair, and
+`R` replay · `1`/`2` answer · then click a word, or `A`/`B`, to hear each word of the pair, and
 `1`–`4` to rate (Again / Hard / Good / Easy), or `Space` for Good.

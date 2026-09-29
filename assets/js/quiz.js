@@ -399,8 +399,9 @@
     $('begin').addEventListener('click', startQuiz);
     player.addEventListener('ended', function () { playing(false); });
     $('play').addEventListener('click', playAudio);
-    $('opt0').addEventListener('click', function () { choose(0); });
-    $('opt1').addEventListener('click', function () { choose(1); });
+    // Before answering, a word is a choice; after, clicking it plays it.
+    $('opt0').addEventListener('click', function () { if (S.answered) hear(0); else choose(0); });
+    $('opt1').addEventListener('click', function () { if (S.answered) hear(1); else choose(1); });
     $('hear0').addEventListener('click', function () { hear(0); });
     $('hear1').addEventListener('click', function () { hear(1); });
     $('nextbtn').addEventListener('click', advance);

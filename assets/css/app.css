@@ -101,7 +101,7 @@ body{font-family:var(--ui);background:var(--paper);color:var(--ink);-webkit-font
 .opt{font-family:var(--display);font-size:27px;font-weight:600;padding:24px 14px;border:1.5px solid var(--ink);border-radius:var(--radius);background:var(--paper-2);cursor:pointer;position:relative;transition:.13s;color:var(--ink)}
 .opt .num{position:absolute;top:8px;left:10px;font-family:var(--ui);font-size:11px;font-weight:700;color:var(--ink-soft)}
 .opt:hover:not(.locked){background:var(--accent-soft);transform:translateY(-2px)}
-.opt.locked{cursor:default}
+.opt.locked{cursor:pointer}
 .opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--good)}
 .opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
 .opt.dim{opacity:.5}
@@ -154,6 +154,7 @@ footer{margin-top:54px;border-top:1.5px solid var(--line);padding-top:14px;font-
 
 /* Comparing the pair: after answering, one button under each option plays
  * that word, so the learner can hear the two side by side. */
+.opt.locked:hover{transform:translateY(-2px)}
 .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:12px auto 0;visibility:hidden}
 .compare.show{visibility:visible}
 .hear{font:inherit;font-weight:600;font-size:14px;padding:9px 12px;border:1.5px solid var(--line);border-radius:var(--radius);background:var(--paper-2);color:var(--ink);cursor:pointer;display:block;text-align:center;line-height:1.35;transition:.12s}
