@@ -340,8 +340,9 @@ history to reproduce the split.
 
 ## Comparing the pair
 
-Once the learner has answered, clicking either option plays it, and a button
-under each option does the same, so the two can be heard side by side. When
+Once the learner has answered, tapping either option plays it, so the two can
+be heard side by side. There are no separate play buttons: the options are
+the buttons. When
 the options are sentences, each word in them becomes tappable on its own
 (dotted underline), and the words that differ between the two carry a solid
 underline, so in *Her hair smells good* / *Her air smells good* the learner can
@@ -351,9 +352,9 @@ order:
 1. a recording made for comparing, in the editor's *Word recordings for
    comparing* section, stored in `data/deck.js` under `words` and published to
    `audio/words/` — or, until someone records the word, an **AI stand-in**
-   under `audio/ai/` (see below), which the button labels *AI voice*;
+   under `audio/ai/` (see below), which the option labels *AI voice*;
 2. the recording of the card whose answer is that word;
-3. the device's built-in text-to-speech voice, as a stand-in. The button is
+3. the device's built-in text-to-speech voice, as a stand-in. The option is
    labelled *computer voice* so it is never mistaken for a real recording, and
    the voice varies by device (a British one that works offline is preferred).
 
@@ -387,5 +388,5 @@ Keys are the word as written, lower-cased, with spaces tidied.
 
 ## Keyboard
 
-`R` replay · `1`/`2` answer · then click an option or any word in it, or `A`/`B`, to hear it, and
+`R` replay · `1`/`2` answer · then tap an option or any word in it, or `A`/`B`, to hear it, and
 `1`–`4` to rate (Again / Hard / Good / Easy), or `Space` for Good.
