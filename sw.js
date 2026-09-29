@@ -74,7 +74,9 @@ function url(path) { return new URL(path, self.registration.scope).href; }
 /* The deck is a script, not JSON (see data/deck.js), so the recordings it
  * names are pulled out of its text rather than parsed. */
 function audioPaths(deckText) {
-  var paths = [], re = /"audio"\s*:\s*"([^"]+)"/g, m;
+  // Card recordings ("audio": "audio/…") and recordings made for comparing
+  // the pair ("words": { "hair": "audio/words/hair.mp3" }) alike.
+  var paths = [], re = /"(audio\/[^"]+)"/g, m;
   while ((m = re.exec(deckText))) paths.push(m[1]);
   return paths;
 }

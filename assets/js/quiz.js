@@ -14,6 +14,9 @@
   var GROUPS = {};
   var player = $('player');
   var currentURL = null; // object URL in flight, revoked before the next one
+  var comparer = $('compareplayer');
+  var compareURL = null;
+  var WORD_AUDIO = {};   // word -> recording, for comparing the pair
 
   /* ---------------------------------- spaced-repetition state (persisted) */
 
@@ -183,6 +186,8 @@
     }
     $('verdict').className = 'verdict'; $('verdict').textContent = '';
     $('rate').classList.remove('show'); $('next').classList.remove('show');
+    stopCompare();
+    $('compare').classList.remove('show');
     updateCounts(); updateProgress();
     loadAudio(c).then(playAudio);
   }
@@ -204,6 +209,7 @@
 
   function playAudio() {
     if (!player.getAttribute('src')) return;
+    stopCompare();
     player.currentTime = 0;
     var p = player.play();
     playing(true);
@@ -228,6 +234,7 @@
       else if (k === i) { b.classList.add('wrong'); b.querySelector('.mark').textContent = '✗'; }
       else b.classList.add('dim');
     }
+    showCompare();
     var v = $('verdict');
     v.textContent = correct ? 'Yes — that’s the one. How hard was it?' : 'Not quite — it was “' + c.answer + '”.';
     v.className = 'verdict show ' + (correct ? 'ok' : 'no');
@@ -239,6 +246,53 @@
       $('next').classList.add('show');
       $('nextbtn').focus();
     }
+  }
+
+  /* ------------------------------------------------ comparing the pair
+   *
+   * Each word plays its own recording where one exists (made for comparing
+   * in the editor, or the recording of the card whose answer it is). A word
+   * nobody has recorded yet is spoken by the device's built-in voice, and the
+   * button says so, so a learner never mistakes it for the real thing. */
+
+  function sourceFor(word) {
+    return WORD_AUDIO[window.HTD.wordKey(word)] || null;
+  }
+
+  function showCompare() {
+    for (var i = 0; i < 2; i++) {
+      var b = $('hear' + i), src = sourceFor(S.opts[i]);
+      b.querySelector('.hw').textContent = S.opts[i];
+      b.querySelector('small').textContent = src ? '' : 'computer voice';
+      b.disabled = !src && !window.HTD.canSpeak();
+      b.setAttribute('aria-label', 'Hear “' + S.opts[i] + '”' + (src ? '' : ' (computer voice)'));
+    }
+    $('compare').classList.add('show');
+  }
+
+  function stopCompare() {
+    comparer.pause();
+    window.HTD.stopSpeaking();
+    [0, 1].forEach(function (i) { $('hear' + i).classList.remove('playing'); });
+  }
+
+  function hear(i) {
+    if (!S.answered || !$('compare').classList.contains('show')) return;
+    var word = S.opts[i], src = sourceFor(word), b = $('hear' + i);
+    stopCompare();
+    player.pause(); playing(false);
+    b.classList.add('playing');
+    var done = function () { b.classList.remove('playing'); };
+    if (!src) { window.HTD.speak(word, done); return; }
+    window.HTD.audioURL({ audio: src.ref }).then(function (url) {
+      if (compareURL) { URL.revokeObjectURL(compareURL); compareURL = null; }
+      if (!url) { window.HTD.speak(word, done); return; }
+      if (url.indexOf('blob:') === 0) compareURL = url;
+      comparer.src = url;
+      comparer.onended = done;
+      var p = comparer.play();
+      if (p) p.catch(done);
+    });
   }
 
   function rate(rating) {
@@ -271,6 +325,7 @@
   }
 
   function finish() {
+    stopCompare();
     show('results');
     var st = S.stats, pct = st.done ? Math.round(st.correct / st.done * 100) : 0;
     animateNum($('rpct'), pct);
@@ -327,6 +382,7 @@
       return;
     }
     GROUPS = window.HTD.groupsById(DECK);
+    WORD_AUDIO = window.HTD.wordAudio(DECK);
     CARDS = window.HTD.playable(DECK); // a card with no recording cannot be heard
 
     // Cards still awaiting a recording, and whether this is an unpublished
@@ -345,6 +401,8 @@
     $('play').addEventListener('click', playAudio);
     $('opt0').addEventListener('click', function () { choose(0); });
     $('opt1').addEventListener('click', function () { choose(1); });
+    $('hear0').addEventListener('click', function () { hear(0); });
+    $('hear1').addEventListener('click', function () { hear(1); });
     $('nextbtn').addEventListener('click', advance);
     $('rate').addEventListener('click', function (e) {
       var b = e.target.closest('.rbtn');
@@ -374,6 +432,8 @@
     document.addEventListener('keydown', function (e) {
       if ($('quiz').classList.contains('hidden')) return;
       if (e.key === 'r' || e.key === 'R') { playAudio(); return; }
+      if (e.key === 'a' || e.key === 'A') { hear(0); return; }
+      if (e.key === 'b' || e.key === 'B') { hear(1); return; }
       if (!S.answered) {
         if (e.key === '1') choose(0);
         else if (e.key === '2') choose(1);

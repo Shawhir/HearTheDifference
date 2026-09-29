@@ -90,6 +90,17 @@
     <div class="rowbtns"><button type="button" class="mini" id="newgroup">+ New group</button></div>
   </details>
 
+  <details class="groups-ed" id="wordsbox">
+    <summary>Word recordings for comparing</summary>
+    <p class="hint" style="margin-top:10px">After answering, learners can play each word of the pair. A word uses, in order: a recording made here, the recording of the card whose answer it is, or — until someone records it — the device's built-in computer voice, which the drill labels as such. Record here to replace the computer voice, or to give a word a better take than its card's.</p>
+    <div class="controls" style="margin:12px 0">
+      <label class="toggle"><input type="checkbox" id="w-only" checked> Only words using the computer voice</label>
+      <span class="status" id="w-count"></span>
+    </div>
+    <div class="wordlist" id="wordlist"></div>
+    <input type="file" id="w-file" accept="audio/*" hidden>
+  </details>
+
   <footer>Draft cards live in this browser only (IndexedDB for the audio, localStorage for the text). Publish to write them into <code>data/deck.js</code> and <code>audio/</code>.</footer>
 </div>
 

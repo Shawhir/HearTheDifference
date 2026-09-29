@@ -143,6 +143,77 @@
     return (deck.cards || []).filter(function (c) { return !!c.audio; });
   }
 
+  /* ------------------------------------------------- comparing the pair
+   *
+   * After answering, the learner can play each word of the pair. A word's
+   * recording comes from, in order:
+   *   1. deck.words[<word>] — a recording made for comparing, in the editor
+   *   2. any card whose answer is that word — the drill's own recording
+   *   3. nothing: the device's built-in voice stands in (see speak()).
+   * Keys are the word as written, lower-cased with spaces tidied.
+   */
+
+  function wordKey(text) {
+    return String(text || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function wordAudio(deck) {
+    var map = {};
+    Object.keys(deck.words || {}).forEach(function (k) {
+      if (deck.words[k]) map[wordKey(k)] = { ref: deck.words[k], from: 'word' };
+    });
+    (deck.cards || []).forEach(function (c) {
+      var k = wordKey(c.answer);
+      if (c.audio && !map[k]) map[k] = { ref: c.audio, from: 'card' };
+    });
+    return map;
+  }
+
+  /* Every word that appears in a pair, once, in deck order. */
+  function pairWords(deck) {
+    var seen = {}, out = [];
+    (deck.cards || []).forEach(function (c) {
+      c.options.forEach(function (o) {
+        var k = wordKey(o);
+        if (k && !seen[k]) { seen[k] = true; out.push({ key: k, text: o.trim(), group: c.group }); }
+      });
+    });
+    return out;
+  }
+
+  /* The stand-in for a word nobody has recorded yet: the device's own
+   * text-to-speech. A British voice that works offline is preferred. */
+  function canSpeak() {
+    return !!(global.speechSynthesis && global.SpeechSynthesisUtterance);
+  }
+
+  function pickVoice() {
+    var voices = global.speechSynthesis.getVoices() || [];
+    var score = function (v) {
+      var lang = (v.lang || '').toLowerCase().replace('_', '-');
+      return (lang === 'en-gb' ? 4 : lang.indexOf('en') === 0 ? 2 : 0) + (v.localService ? 1 : 0);
+    };
+    return voices.slice().sort(function (a, b) { return score(b) - score(a); })
+      .filter(function (v) { return score(v) >= 2; })[0] || null;
+  }
+
+  function speak(text, onend) {
+    if (!canSpeak()) { if (onend) onend(); return false; }
+    global.speechSynthesis.cancel();
+    var u = new global.SpeechSynthesisUtterance(text);
+    var v = pickVoice();
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : 'en-GB';
+    u.rate = 0.9;
+    u.onend = u.onerror = function () { if (onend) onend(); };
+    global.speechSynthesis.speak(u);
+    return true;
+  }
+
+  function stopSpeaking() {
+    if (canSpeak()) global.speechSynthesis.cancel();
+  }
+
   /* ---------------------------------------------------------- publishing */
 
   var DECK_HEADER =
@@ -166,6 +237,10 @@
     deck.cards.forEach(function (c) {
       if (c.audio && !audioStore.isDraftRef(c.audio)) taken[c.audio] = true;
     });
+    var words = deck.words || {};
+    Object.keys(words).forEach(function (k) {
+      if (words[k] && !audioStore.isDraftRef(words[k])) taken[words[k]] = true;
+    });
 
     var pending = deck.cards.filter(function (c) { return audioStore.isDraftRef(c.audio); });
     return Promise.all(pending.map(function (card) {
@@ -177,8 +252,19 @@
         card.audio = path;
         return { path: path, blob: blob };
       });
-    })).then(function (files) {
-      return { deck: deck, files: files.filter(function (f) { return !!f.blob; }) };
+    }).concat(Object.keys(words).filter(function (k) { return audioStore.isDraftRef(words[k]); }).map(function (k) {
+      // Recordings made for comparing live together under audio/words/.
+      return audioStore.get(words[k]).then(function (blob) {
+        var base = 'audio/words/' + slugify(k, 'word');
+        var path = base + '.mp3';
+        for (var n = 2; taken[path]; n++) path = base + '-' + n + '.mp3';
+        taken[path] = true;
+        words[k] = blob ? path : null;
+        return blob ? { path: path, blob: blob } : null;
+      });
+    }))).then(function (files) {
+      if (deck.words) Object.keys(deck.words).forEach(function (k) { if (!deck.words[k]) delete deck.words[k]; });
+      return { deck: deck, files: files.filter(function (f) { return f && f.blob; }) };
     });
   }
 
@@ -265,6 +351,12 @@
     clearDraft: clearDraft,
     groupsById: groupsById,
     playable: playable,
+    wordKey: wordKey,
+    wordAudio: wordAudio,
+    pairWords: pairWords,
+    canSpeak: canSpeak,
+    speak: speak,
+    stopSpeaking: stopSpeaking,
     serialize: serialize,
     prepareRelease: prepareRelease,
     zip: zip,

@@ -53,3 +53,11 @@ details.groups-ed{margin-top:22px;border:1.5px solid var(--line);border-radius:v
 details.groups-ed summary{font-family:var(--display);font-size:18px;font-weight:600;cursor:pointer}
 .gedit{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}
 .gedit input{font:inherit;font-size:13.5px;padding:7px 9px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink)}
+
+.wordlist{max-height:60vh;overflow-y:auto;border-top:1.5px solid var(--line)}
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}
+.wrow .wt{font-family:var(--display);font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.wrow .wt small{display:block;font-family:var(--ui);font-size:11.5px;font-weight:600;letter-spacing:.04em;color:var(--ink-soft)}
+.wrow .wt small.tts{color:var(--bad)}
+.wrow .wt small.own{color:var(--good)}
+.wrow .btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}

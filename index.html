@@ -47,11 +47,15 @@
         <svg id="playicon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
         <div class="eq hidden" id="eq" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       </button>
-      <p class="replay-hint"><kbd>R</kbd> replay · <kbd>1</kbd>/<kbd>2</kbd> answer · then <kbd>1</kbd>–<kbd>4</kbd> to rate</p>
+      <p class="replay-hint"><kbd>R</kbd> replay · <kbd>1</kbd>/<kbd>2</kbd> answer · then <kbd>A</kbd>/<kbd>B</kbd> hear each word · <kbd>1</kbd>–<kbd>4</kbd> to rate</p>
       <p class="prompt">Which word did you hear?</p>
       <div class="opts">
         <button class="opt" id="opt0"><span class="num">1</span><span class="mark"></span><span class="w"></span></button>
         <button class="opt" id="opt1"><span class="num">2</span><span class="mark"></span><span class="w"></span></button>
+      </div>
+      <div class="compare" id="compare" aria-label="Hear each word of the pair">
+        <button class="hear" id="hear0" type="button"><span class="ico" aria-hidden="true">▶</span><span class="hw"></span><small></small></button>
+        <button class="hear" id="hear1" type="button"><span class="ico" aria-hidden="true">▶</span><span class="hw"></span><small></small></button>
       </div>
       <div class="feedback">
         <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
@@ -88,6 +92,7 @@
 </div>
 
 <audio id="player" preload="auto"></audio>
+<audio id="compareplayer" preload="none"></audio>
 <script src="data/deck.js"></script>
 <script src="assets/js/deck.js"></script>
 <script src="assets/js/quiz.js"></script>

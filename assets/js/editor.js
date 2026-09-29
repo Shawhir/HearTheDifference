@@ -333,6 +333,135 @@
     });
   });
 
+  /* ------------------------------------------ word recordings (comparing)
+   *
+   * deck.words maps a word, as the drill keys it, to a recording made for
+   * comparing the pair. Words with none fall back to their card's recording,
+   * then to the device's computer voice.
+   */
+
+  var wordRecorder = null, wordRecKey = null, wordFileKey = null;
+
+  function wordStatus(key) {
+    var own = deck.words && deck.words[key];
+    if (own) return { cls: 'own', text: H.audio.isDraftRef(own) ? 'new recording (unpublished)' : 'own recording' };
+    var src = H.wordAudio(deck)[key];
+    if (src) return { cls: '', text: 'uses its card’s recording' };
+    return { cls: 'tts', text: 'computer voice' };
+  }
+
+  function setWord(key, ref) {
+    deck.words = deck.words || {};
+    var old = deck.words[key];
+    if (old && old !== ref && H.audio.isDraftRef(old)) H.audio.del(old);
+    if (ref) deck.words[key] = ref; else delete deck.words[key];
+    if (!Object.keys(deck.words).length) delete deck.words;
+    touch();
+  }
+
+  function playWord(key, text) {
+    var src = H.wordAudio(deck)[key];
+    if (!src) {
+      if (!H.speak(text)) msg($('topmsg'), 'This browser has no built-in voice to play.', 'err');
+      return;
+    }
+    H.audioURL({ audio: src.ref }).then(function (url) {
+      if (!url) { msg($('topmsg'), 'That recording could not be found.', 'err'); return; }
+      if (previewURL) URL.revokeObjectURL(previewURL);
+      previewURL = url.indexOf('blob:') === 0 ? url : null;
+      $('preview').src = url;
+      $('preview').play().catch(function () { msg($('topmsg'), 'The browser refused to play that file.', 'err'); });
+    });
+  }
+
+  function recordWord(key, button) {
+    if (wordRecorder && wordRecorder.state === 'recording') {
+      var same = wordRecKey === key;
+      wordRecorder.stop();
+      if (same) return;
+    }
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      msg($('topmsg'), 'This browser cannot record. Use “Choose file…” instead.', 'err');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      var chunks = [];
+      var rec = new MediaRecorder(stream);
+      wordRecorder = rec; wordRecKey = key;
+      rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        wordRecKey = null;
+        if (!chunks.length) { renderWords(); return; }
+        H.audio.put(new Blob(chunks, { type: rec.mimeType })).then(function (ref) {
+          setWord(key, ref);
+          msg($('topmsg'), 'Recorded “' + key + '”. Publish to keep it.', 'ok');
+        }).catch(function () { msg($('topmsg'), 'Could not store that recording in this browser.', 'err'); });
+      };
+      rec.start();
+      button.classList.add('rec-on');
+      button.textContent = '■ Stop';
+      msg($('topmsg'), 'Recording “' + key + '” — say it once, then press stop.', '');
+    }).catch(function () {
+      msg($('topmsg'), 'Microphone access was refused (it also needs https, localhost or a file opened from disk).', 'err');
+    });
+  }
+
+  $('w-file').addEventListener('change', function (e) {
+    var f = e.target.files[0], key = wordFileKey;
+    e.target.value = '';
+    if (!f || !key) return;
+    H.audio.put(f).then(function (ref) {
+      setWord(key, ref);
+      msg($('topmsg'), 'Recording attached to “' + key + '”. Publish to keep it.', 'ok');
+    }).catch(function () { msg($('topmsg'), 'Could not store that audio in this browser.', 'err'); });
+  });
+
+  $('w-only').addEventListener('change', renderWords);
+
+  function renderWords() {
+    var host = $('wordlist');
+    host.innerHTML = '';
+    var all = H.pairWords(deck);
+    var tts = all.filter(function (w) { return wordStatus(w.key).cls === 'tts'; }).length;
+    $('w-count').textContent = all.length + ' words · ' + tts + ' on the computer voice';
+    var only = $('w-only').checked;
+    var frag = document.createDocumentFragment();
+    all.forEach(function (w) {
+      var st = wordStatus(w.key);
+      if (only && st.cls !== 'tts') return;
+      var row = document.createElement('div');
+      row.className = 'wrow';
+      row.innerHTML = '<div class="wt"><span></span><small></small></div><div class="btns">' +
+        '<button type="button" class="mini play">▶ Play</button>' +
+        '<button type="button" class="mini rec">● Record</button>' +
+        '<button type="button" class="mini pick">Choose file…</button>' +
+        '<button type="button" class="mini danger del">Remove</button></div>';
+      row.querySelector('.wt span').textContent = w.text;
+      var small = row.querySelector('.wt small');
+      small.textContent = groupLabel(w.group) + ' · ' + st.text;
+      small.className = st.cls;
+      row.querySelector('.del').hidden = st.cls !== 'own';
+      row.querySelector('.play').addEventListener('click', function () { playWord(w.key, w.text); });
+      row.querySelector('.rec').addEventListener('click', function (e) { recordWord(w.key, e.currentTarget); });
+      row.querySelector('.pick').addEventListener('click', function () { wordFileKey = w.key; $('w-file').click(); });
+      row.querySelector('.del').addEventListener('click', function () {
+        if (!confirm('Remove the recording made for “' + w.text + '”? It goes back to ' +
+          (H.wordAudio({ cards: deck.cards })[w.key] ? 'its card’s recording.' : 'the computer voice.'))) return;
+        setWord(w.key, null);
+      });
+      frag.appendChild(row);
+    });
+    host.appendChild(frag);
+    if (!host.children.length) {
+      var p = document.createElement('p');
+      p.className = 'hint';
+      p.style.padding = '14px 4px';
+      p.textContent = only ? 'Every word has a real recording.' : 'No pairs yet.';
+      host.appendChild(p);
+    }
+  }
+
   /* ---------------------------------------------------------- publishing */
 
   function releaseFiles() {
@@ -467,6 +596,7 @@
     if (!isDirty()) { msg($('topmsg'), 'Nothing unpublished to discard.', ''); return; }
     if (!confirm('Throw away every unpublished change, including new recordings?')) return;
     deck.cards.forEach(function (c) { if (H.audio.isDraftRef(c.audio)) H.audio.del(c.audio); });
+    Object.keys(deck.words || {}).forEach(function (k) { if (H.audio.isDraftRef(deck.words[k])) H.audio.del(deck.words[k]); });
     H.clearDraft();
     deck = H.published();
     clearForm();
@@ -480,6 +610,7 @@
     renderGroupOptions();
     renderGroups();
     renderList();
+    renderWords();
     renderStatus();
   }
 

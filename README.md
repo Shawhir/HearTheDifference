@@ -336,7 +336,31 @@ history to reproduce the split.
 
   The drill therefore offers 82 cards until those are recorded.
 
+## Comparing the pair
+
+Once the learner has answered, a button appears under each option to play
+that word, so the two can be heard side by side. Each word uses, in order:
+
+1. a recording made for comparing, in the editor's *Word recordings for
+   comparing* section, stored in `data/deck.js` under `words` and published to
+   `audio/words/`;
+2. the recording of the card whose answer is that word;
+3. the device's built-in text-to-speech voice, as a stand-in. The button is
+   labelled *computer voice* so it is never mistaken for a real recording, and
+   the voice varies by device (a British one that works offline is preferred).
+
+Of the 94 words in the pairs, 75 already play a real recording through
+their cards. The editor section lists the rest (tick *Only words using the
+computer voice*) with **Record** and **Choose file…** on each, and also lets
+any word be given a better take than its card's.
+
+```js
+"words": { "hair": "audio/words/hair.mp3" }
+```
+
+Keys are the word as written, lower-cased, with spaces tidied.
+
 ## Keyboard
 
-`R` replay · `1`/`2` answer · then `1`–`4` to rate (Again / Hard / Good / Easy),
-or `Space` for Good.
+`R` replay · `1`/`2` answer · then `A`/`B` to hear each word of the pair, and
+`1`–`4` to rate (Again / Hard / Good / Easy), or `Space` for Good.
