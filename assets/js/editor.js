@@ -478,13 +478,24 @@
   function renderCardWords() {
     var host = $('cardwords');
     host.innerHTML = '';
-    var seen = {};
-    optionValues().forEach(function (text) {
-      var key = H.wordKey(text);
-      if (!key || seen[key]) return;
-      seen[key] = true;
-      host.appendChild(wordRow({ key: key, text: text.trim() }, false));
+    // Both options whole, then, for sentences, their words: the ones that
+    // differ between the two first, since those are the point of the pair.
+    var opts = optionValues();
+    var differs = {};
+    [0, 1].forEach(function (i) {
+      var d = H.differing(opts[i], opts[1 - i]);
+      H.tokens(opts[i]).forEach(function (t, k) { if (d[k]) differs[t.key] = true; });
     });
+    var words = H.cardWords({ options: opts.filter(Boolean) });
+    words.filter(function (w) { return !w.part; })
+      .concat(words.filter(function (w) { return w.part && differs[w.key]; }))
+      .concat(words.filter(function (w) { return w.part && !differs[w.key]; }))
+      .forEach(function (w) {
+        var row = wordRow(w, false);
+        if (w.part && differs[w.key]) row.querySelector('.wt span').innerHTML = '<u></u>';
+        if (w.part && differs[w.key]) row.querySelector('.wt u').textContent = w.text;
+        host.appendChild(row);
+      });
     if (!host.children.length) {
       var p = document.createElement('p');
       p.className = 'hint';

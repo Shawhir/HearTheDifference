@@ -270,6 +270,7 @@
       b.setAttribute('aria-label', 'Hear “' + S.opts[i] + '”' + (note ? ' (' + note + ')' : ''));
     }
     $('compare').classList.add('show');
+    splitOptions();
   }
 
   function stopCompare() {
@@ -278,23 +279,58 @@
     [0, 1].forEach(function (i) { $('hear' + i).classList.remove('playing'); });
   }
 
-  function hear(i) {
-    if (!S.answered || !$('compare').classList.contains('show')) return;
-    var word = S.opts[i], src = sourceFor(word), b = $('hear' + i);
+  /* Play one thing: a whole option, or one word of a sentence. el is what
+   * lights up while it plays. */
+  function playKey(key, text, el) {
+    var src = WORD_AUDIO[key];
     stopCompare();
     player.pause(); playing(false);
-    b.classList.add('playing');
-    var done = function () { b.classList.remove('playing'); };
-    if (!src) { window.HTD.speak(word, done); return; }
+    el.classList.add('playing');
+    var done = function () { el.classList.remove('playing'); };
+    if (!src) { window.HTD.speak(text, done); return; }
     window.HTD.audioURL({ audio: src.ref }).then(function (url) {
       if (compareURL) { URL.revokeObjectURL(compareURL); compareURL = null; }
-      if (!url) { window.HTD.speak(word, done); return; }
+      if (!url) { window.HTD.speak(text, done); return; }
       if (url.indexOf('blob:') === 0) compareURL = url;
       comparer.src = url;
       comparer.onended = done;
       var p = comparer.play();
       if (p) p.catch(done);
     });
+  }
+
+  function hear(i) {
+    if (!S.answered || !$('compare').classList.contains('show')) return;
+    playKey(window.HTD.wordKey(S.opts[i]), S.opts[i], $('hear' + i));
+  }
+
+  function hearToken(tok) {
+    if (!S.answered) return;
+    playKey(tok.dataset.key, tok.dataset.say, tok);
+  }
+
+  /* After answering, a sentence's words become tappable one by one, and the
+   * words that differ between the two options are underlined. */
+  function splitOptions() {
+    for (var i = 0; i < 2; i++) {
+      var ts = window.HTD.tokens(S.opts[i]);
+      if (ts.length < 2) continue;
+      var diff = window.HTD.differing(S.opts[i], S.opts[1 - i]);
+      var w = $('opt' + i).querySelector('.w');
+      w.textContent = '';
+      ts.forEach(function (t, k) {
+        if (k) w.appendChild(document.createTextNode(' '));
+        var span = document.createElement('span');
+        span.className = 'tok' + (diff[k] ? ' diff' : '');
+        span.textContent = t.text;
+        span.dataset.key = t.key;
+        span.dataset.say = t.key;
+        span.setAttribute('role', 'button');
+        span.tabIndex = 0;
+        span.setAttribute('aria-label', 'Hear “' + t.key + '”');
+        w.appendChild(span);
+      });
+    }
   }
 
   function rate(rating) {
@@ -402,8 +438,14 @@
     player.addEventListener('ended', function () { playing(false); });
     $('play').addEventListener('click', playAudio);
     // Before answering, a word is a choice; after, clicking it plays it.
-    $('opt0').addEventListener('click', function () { if (S.answered) hear(0); else choose(0); });
-    $('opt1').addEventListener('click', function () { if (S.answered) hear(1); else choose(1); });
+    [0, 1].forEach(function (i) {
+      $('opt' + i).addEventListener('click', function (e) {
+        var tok = e.target.closest('.tok');
+        if (tok && S.answered) hearToken(tok);
+        else if (S.answered) hear(i);
+        else choose(i);
+      });
+    });
     $('hear0').addEventListener('click', function () { hear(0); });
     $('hear1').addEventListener('click', function () { hear(1); });
     $('nextbtn').addEventListener('click', advance);
@@ -434,6 +476,9 @@
 
     document.addEventListener('keydown', function (e) {
       if ($('quiz').classList.contains('hidden')) return;
+      if (e.target.classList && e.target.classList.contains('tok') && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault(); hearToken(e.target); return;
+      }
       if (e.key === 'r' || e.key === 'R') { playAudio(); return; }
       if (e.key === 'a' || e.key === 'A') { hear(0); return; }
       if (e.key === 'b' || e.key === 'B') { hear(1); return; }

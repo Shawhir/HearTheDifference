@@ -340,9 +340,13 @@ history to reproduce the split.
 
 ## Comparing the pair
 
-Once the learner has answered, clicking either word plays it, and a button
-under each option does the same, so the two can be heard side by side. Each
-word uses, in order:
+Once the learner has answered, clicking either option plays it, and a button
+under each option does the same, so the two can be heard side by side. When
+the options are sentences, each word in them becomes tappable on its own
+(dotted underline), and the words that differ between the two carry a solid
+underline, so in *Her hair smells good* / *Her air smells good* the learner can
+tap *hair* and *air* alone. Each option, and each word of a sentence, uses, in
+order:
 
 1. a recording made for comparing, in the editor's *Word recordings for
    comparing* section, stored in `data/deck.js` under `words` and published to
@@ -353,12 +357,14 @@ word uses, in order:
    labelled *computer voice* so it is never mistaken for a real recording, and
    the voice varies by device (a British one that works offline is preferred).
 
-Of the 94 words in the pairs, 75 already play a real recording through
-their cards. The other 19 have AI stand-ins, made by
+Of the 94 options in the pairs, 75 already play a real recording through
+their cards; of the 83 separate words inside the sentences, 34 do. The other
+19 options and 49 words have AI stand-ins (68 in all), made by
 `tools/make_ai_audio.py` with Kokoro-82M (Apache-2.0, British voice
 `bf_emma`) run locally. Their pronunciation was checked from the phonemes the
 model is given (*hair* /heə/ against *air*, *Dis* /dɪs/, *Dough* /dəʊ/
-against *Though* /ðəʊ/), and their loudness matched to the existing
+against *Though* /ðəʊ/; *lives* is forced to the verb, /lɪvz/, to contrast
+with *leaves*), and their loudness matched to the existing
 recordings. They are mono MP3 at 64 kbps, 4–14 KB each. Rerun the script
 after adding pairs and it fills only the new gaps; its docstring has the
 setup.
@@ -369,8 +375,9 @@ Recording over a stand-in in the editor replaces it. The old
 The editor section lists the words still needing a real recording, with
 **Record** and **Choose file…** on each, and also lets any word be given a
 better take than its card's. The same controls sit on
-every card in the editor, under *Words for comparing*, for that card's two
-words; a recording made there is kept at once, without saving the card.
+every card in the editor, under *Words for comparing*: the two options, then
+for sentences the words that differ, then the rest. A recording made there is
+kept at once, without saving the card.
 
 ```js
 "words": { "hair": "audio/words/hair.mp3" }
@@ -380,5 +387,5 @@ Keys are the word as written, lower-cased, with spaces tidied.
 
 ## Keyboard
 
-`R` replay · `1`/`2` answer · then click a word, or `A`/`B`, to hear each word of the pair, and
+`R` replay · `1`/`2` answer · then click an option or any word in it, or `A`/`B`, to hear it, and
 `1`–`4` to rate (Again / Hard / Good / Easy), or `Space` for Good.
