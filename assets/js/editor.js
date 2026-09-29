@@ -346,6 +346,7 @@
 
   function wordStatus(key) {
     var own = deck.words && deck.words[key];
+    if (own && H.isStandIn(own)) return { cls: 'tts ai', text: 'AI stand-in — record over it' };
     if (own) return { cls: 'own', text: H.audio.isDraftRef(own) ? 'new recording (unpublished)' : 'own recording' };
     var src = H.wordAudio(deck)[key];
     if (src) return { cls: '', text: 'uses its card’s recording' };
@@ -435,8 +436,8 @@
     row.querySelector('.wt span').textContent = w.text;
     var small = row.querySelector('.wt small');
     small.textContent = (showGroup ? groupLabel(w.group) + ' · ' : '') + st.text;
-    small.className = st.cls;
-    row.querySelector('.del').hidden = st.cls !== 'own';
+    small.className = st.cls.split(' ')[0];
+    row.querySelector('.del').hidden = !(deck.words && deck.words[w.key]);
     row.querySelector('.play').addEventListener('click', function () { playWord(w.key, w.text); });
     row.querySelector('.rec').addEventListener('click', function (e) { recordWord(w.key, e.currentTarget); });
     row.querySelector('.pick').addEventListener('click', function () { wordFileKey = w.key; $('w-file').click(); });
@@ -452,12 +453,14 @@
     var host = $('wordlist');
     host.innerHTML = '';
     var all = H.pairWords(deck);
-    var tts = all.filter(function (w) { return wordStatus(w.key).cls === 'tts'; }).length;
-    $('w-count').textContent = all.length + ' words · ' + tts + ' on the computer voice';
+    var need = function (w) { return wordStatus(w.key).cls.indexOf('tts') === 0; };
+    var ai = all.filter(function (w) { return wordStatus(w.key).cls === 'tts ai'; }).length;
+    var tts = all.filter(need).length - ai;
+    $('w-count').textContent = all.length + ' words · ' + ai + ' on an AI stand-in · ' + tts + ' on the computer voice';
     var only = $('w-only').checked;
     var frag = document.createDocumentFragment();
     all.forEach(function (w) {
-      if (only && wordStatus(w.key).cls !== 'tts') return;
+      if (only && !need(w)) return;
       var row = wordRow(w, true);
       frag.appendChild(row);
     });

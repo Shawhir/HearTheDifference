@@ -147,7 +147,8 @@
    *
    * After answering, the learner can play each word of the pair. A word's
    * recording comes from, in order:
-   *   1. deck.words[<word>] — a recording made for comparing, in the editor
+   *   1. deck.words[<word>] — a recording made for comparing in the editor,
+   *      or an AI stand-in under audio/ai/ until someone does
    *   2. any card whose answer is that word — the drill's own recording
    *   3. nothing: the device's built-in voice stands in (see speak()).
    * Keys are the word as written, lower-cased with spaces tidied.
@@ -157,10 +158,16 @@
     return String(text || '').trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
+  /* AI stand-ins made by tools/make_ai_audio.py live under audio/ai/, until
+   * someone records the word for real. */
+  function isStandIn(ref) {
+    return typeof ref === 'string' && ref.indexOf('audio/ai/') === 0;
+  }
+
   function wordAudio(deck) {
     var map = {};
     Object.keys(deck.words || {}).forEach(function (k) {
-      if (deck.words[k]) map[wordKey(k)] = { ref: deck.words[k], from: 'word' };
+      if (deck.words[k]) map[wordKey(k)] = { ref: deck.words[k], from: isStandIn(deck.words[k]) ? 'ai' : 'word' };
     });
     (deck.cards || []).forEach(function (c) {
       var k = wordKey(c.answer);
@@ -352,6 +359,7 @@
     groupsById: groupsById,
     playable: playable,
     wordKey: wordKey,
+    isStandIn: isStandIn,
     wordAudio: wordAudio,
     pairWords: pairWords,
     canSpeak: canSpeak,
