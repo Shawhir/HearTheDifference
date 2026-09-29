@@ -187,7 +187,10 @@
     $('verdict').className = 'verdict'; $('verdict').textContent = '';
     $('rate').classList.remove('show'); $('next').classList.remove('show');
     stopCompare();
-    $('compare').classList.remove('show');
+    [0, 1].forEach(function (i) {
+      $('opt' + i).querySelector('.src').textContent = '';
+      $('opt' + i).removeAttribute('aria-label');
+    });
     updateCounts(); updateProgress();
     loadAudio(c).then(playAudio);
   }
@@ -236,7 +239,7 @@
     }
     showCompare();
     var v = $('verdict');
-    v.textContent = correct ? 'Yes — that’s the one. How hard was it?' : 'Not quite — it was “' + c.answer + '”.';
+    v.textContent = correct ? 'Yes — that’s the one. How hard was it?' : 'Not quite — it was “' + c.answer + '”' + (/[.!?]$/.test(c.answer) ? '' : '.');
     v.className = 'verdict show ' + (correct ? 'ok' : 'no');
     if (S.srs) {
       [].forEach.call($('rate').children, function (b) { b.querySelector('small').textContent = previewIvl(c, b.dataset.r); });
@@ -253,30 +256,30 @@
    * Each word plays its own recording where one exists (made for comparing
    * in the editor, or the recording of the card whose answer it is). A word
    * nobody has recorded yet plays its AI stand-in, or failing that the
-   * device's built-in voice, and the button says which, so a learner never
+   * device's built-in voice, and the option says which, so a learner never
    * mistakes either for a real recording. */
 
   function sourceFor(word) {
     return WORD_AUDIO[window.HTD.wordKey(word)] || null;
   }
 
+  /* After answering, the options themselves are what the learner taps to
+   * hear them: the whole option, or one word of a sentence. An option on a
+   * stand-in voice says so inside its own box. */
   function showCompare() {
     for (var i = 0; i < 2; i++) {
-      var b = $('hear' + i), src = sourceFor(S.opts[i]);
-      b.querySelector('.hw').textContent = S.opts[i];
+      var src = sourceFor(S.opts[i]);
       var note = !src ? 'computer voice' : src.from === 'ai' ? 'AI voice' : '';
-      b.querySelector('small').textContent = note;
-      b.disabled = !src && !window.HTD.canSpeak();
-      b.setAttribute('aria-label', 'Hear “' + S.opts[i] + '”' + (note ? ' (' + note + ')' : ''));
+      $('opt' + i).querySelector('.src').textContent = note;
+      $('opt' + i).setAttribute('aria-label', S.opts[i] + ' — tap to hear it' + (note ? ' (' + note + ')' : ''));
     }
-    $('compare').classList.add('show');
     splitOptions();
   }
 
   function stopCompare() {
     comparer.pause();
     window.HTD.stopSpeaking();
-    [0, 1].forEach(function (i) { $('hear' + i).classList.remove('playing'); });
+    [].forEach.call(document.querySelectorAll('.opt.playing, .opt .tok.playing'), function (el) { el.classList.remove('playing'); });
   }
 
   /* Play one thing: a whole option, or one word of a sentence. el is what
@@ -300,8 +303,8 @@
   }
 
   function hear(i) {
-    if (!S.answered || !$('compare').classList.contains('show')) return;
-    playKey(window.HTD.wordKey(S.opts[i]), S.opts[i], $('hear' + i));
+    if (!S.answered) return;
+    playKey(window.HTD.wordKey(S.opts[i]), S.opts[i], $('opt' + i));
   }
 
   function hearToken(tok) {
@@ -446,8 +449,6 @@
         else choose(i);
       });
     });
-    $('hear0').addEventListener('click', function () { hear(0); });
-    $('hear1').addEventListener('click', function () { hear(1); });
     $('nextbtn').addEventListener('click', advance);
     $('rate').addEventListener('click', function (e) {
       var b = e.target.closest('.rbtn');
