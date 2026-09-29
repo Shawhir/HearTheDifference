@@ -73,6 +73,11 @@
             <button type="button" class="mini danger" id="a-clear">Remove</button>
           </div>
         </div>
+        <div class="field">
+          <label>Words for comparing</label>
+          <p class="hint" style="margin-bottom:6px">What each button plays once the learner has answered. Recording one here is kept straight away, with no need to save the card.</p>
+          <div class="wordlist cardwords" id="cardwords"></div>
+        </div>
         <p class="msg" id="formmsg"></p>
         <div class="rowbtns">
           <button type="submit" class="btn btn-primary" style="font-size:15px;padding:12px 22px">Save card</button>
@@ -92,9 +97,9 @@
 
   <details class="groups-ed" id="wordsbox">
     <summary>Word recordings for comparing</summary>
-    <p class="hint" style="margin-top:10px">After answering, learners can play each word of the pair. A word uses, in order: a recording made here, the recording of the card whose answer it is, or — until someone records it — the device's built-in computer voice, which the drill labels as such. Record here to replace the computer voice, or to give a word a better take than its card's.</p>
+    <p class="hint" style="margin-top:10px">After answering, learners can play each word of the pair. A word uses, in order: a recording made here, the recording of the card whose answer it is, or — until someone records it — an AI stand-in (or failing that the device's computer voice), which the drill labels as such. Record here to replace a stand-in, or to give a word a better take than its card's.</p>
     <div class="controls" style="margin:12px 0">
-      <label class="toggle"><input type="checkbox" id="w-only" checked> Only words using the computer voice</label>
+      <label class="toggle"><input type="checkbox" id="w-only" checked> Only words still needing a real recording</label>
       <span class="status" id="w-count"></span>
     </div>
     <div class="wordlist" id="wordlist"></div>

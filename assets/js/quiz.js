@@ -252,8 +252,9 @@
    *
    * Each word plays its own recording where one exists (made for comparing
    * in the editor, or the recording of the card whose answer it is). A word
-   * nobody has recorded yet is spoken by the device's built-in voice, and the
-   * button says so, so a learner never mistakes it for the real thing. */
+   * nobody has recorded yet plays its AI stand-in, or failing that the
+   * device's built-in voice, and the button says which, so a learner never
+   * mistakes either for a real recording. */
 
   function sourceFor(word) {
     return WORD_AUDIO[window.HTD.wordKey(word)] || null;
@@ -263,9 +264,10 @@
     for (var i = 0; i < 2; i++) {
       var b = $('hear' + i), src = sourceFor(S.opts[i]);
       b.querySelector('.hw').textContent = S.opts[i];
-      b.querySelector('small').textContent = src ? '' : 'computer voice';
+      var note = !src ? 'computer voice' : src.from === 'ai' ? 'AI voice' : '';
+      b.querySelector('small').textContent = note;
       b.disabled = !src && !window.HTD.canSpeak();
-      b.setAttribute('aria-label', 'Hear “' + S.opts[i] + '”' + (src ? '' : ' (computer voice)'));
+      b.setAttribute('aria-label', 'Hear “' + S.opts[i] + '”' + (note ? ' (' + note + ')' : ''));
     }
     $('compare').classList.add('show');
   }
@@ -399,8 +401,9 @@
     $('begin').addEventListener('click', startQuiz);
     player.addEventListener('ended', function () { playing(false); });
     $('play').addEventListener('click', playAudio);
-    $('opt0').addEventListener('click', function () { choose(0); });
-    $('opt1').addEventListener('click', function () { choose(1); });
+    // Before answering, a word is a choice; after, clicking it plays it.
+    $('opt0').addEventListener('click', function () { if (S.answered) hear(0); else choose(0); });
+    $('opt1').addEventListener('click', function () { if (S.answered) hear(1); else choose(1); });
     $('hear0').addEventListener('click', function () { hear(0); });
     $('hear1').addEventListener('click', function () { hear(1); });
     $('nextbtn').addEventListener('click', advance);

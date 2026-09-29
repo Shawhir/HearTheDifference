@@ -202,6 +202,7 @@
     setAudio(null);
     msg($('formmsg'), '');
     $('delete').disabled = true;
+    renderCardWords();
     renderList();
   }
 
@@ -218,6 +219,7 @@
     setAudio(card.audio);
     msg($('formmsg'), '');
     $('delete').disabled = false;
+    renderCardWords();
     renderList();
   }
 
@@ -344,6 +346,7 @@
 
   function wordStatus(key) {
     var own = deck.words && deck.words[key];
+    if (own && H.isStandIn(own)) return { cls: 'tts ai', text: 'AI stand-in — record over it' };
     if (own) return { cls: 'own', text: H.audio.isDraftRef(own) ? 'new recording (unpublished)' : 'own recording' };
     var src = H.wordAudio(deck)[key];
     if (src) return { cls: '', text: 'uses its card’s recording' };
@@ -419,37 +422,46 @@
 
   $('w-only').addEventListener('change', renderWords);
 
+  /* One word: its text, where its sound comes from, and the buttons to hear
+   * or replace it. Used by the list at the bottom and by the card form. */
+  function wordRow(w, showGroup) {
+    var st = wordStatus(w.key);
+    var row = document.createElement('div');
+    row.className = 'wrow';
+    row.innerHTML = '<div class="wt"><span></span><small></small></div><div class="btns">' +
+      '<button type="button" class="mini play">▶ Play</button>' +
+      '<button type="button" class="mini rec">● Record</button>' +
+      '<button type="button" class="mini pick">Choose file…</button>' +
+      '<button type="button" class="mini danger del">Remove</button></div>';
+    row.querySelector('.wt span').textContent = w.text;
+    var small = row.querySelector('.wt small');
+    small.textContent = (showGroup ? groupLabel(w.group) + ' · ' : '') + st.text;
+    small.className = st.cls.split(' ')[0];
+    row.querySelector('.del').hidden = !(deck.words && deck.words[w.key]);
+    row.querySelector('.play').addEventListener('click', function () { playWord(w.key, w.text); });
+    row.querySelector('.rec').addEventListener('click', function (e) { recordWord(w.key, e.currentTarget); });
+    row.querySelector('.pick').addEventListener('click', function () { wordFileKey = w.key; $('w-file').click(); });
+    row.querySelector('.del').addEventListener('click', function () {
+      if (!confirm('Remove the recording made for “' + w.text + '”? It goes back to ' +
+        (H.wordAudio({ cards: deck.cards })[w.key] ? 'its card’s recording.' : 'the computer voice.'))) return;
+      setWord(w.key, null);
+    });
+    return row;
+  }
+
   function renderWords() {
     var host = $('wordlist');
     host.innerHTML = '';
     var all = H.pairWords(deck);
-    var tts = all.filter(function (w) { return wordStatus(w.key).cls === 'tts'; }).length;
-    $('w-count').textContent = all.length + ' words · ' + tts + ' on the computer voice';
+    var need = function (w) { return wordStatus(w.key).cls.indexOf('tts') === 0; };
+    var ai = all.filter(function (w) { return wordStatus(w.key).cls === 'tts ai'; }).length;
+    var tts = all.filter(need).length - ai;
+    $('w-count').textContent = all.length + ' words · ' + ai + ' on an AI stand-in · ' + tts + ' on the computer voice';
     var only = $('w-only').checked;
     var frag = document.createDocumentFragment();
     all.forEach(function (w) {
-      var st = wordStatus(w.key);
-      if (only && st.cls !== 'tts') return;
-      var row = document.createElement('div');
-      row.className = 'wrow';
-      row.innerHTML = '<div class="wt"><span></span><small></small></div><div class="btns">' +
-        '<button type="button" class="mini play">▶ Play</button>' +
-        '<button type="button" class="mini rec">● Record</button>' +
-        '<button type="button" class="mini pick">Choose file…</button>' +
-        '<button type="button" class="mini danger del">Remove</button></div>';
-      row.querySelector('.wt span').textContent = w.text;
-      var small = row.querySelector('.wt small');
-      small.textContent = groupLabel(w.group) + ' · ' + st.text;
-      small.className = st.cls;
-      row.querySelector('.del').hidden = st.cls !== 'own';
-      row.querySelector('.play').addEventListener('click', function () { playWord(w.key, w.text); });
-      row.querySelector('.rec').addEventListener('click', function (e) { recordWord(w.key, e.currentTarget); });
-      row.querySelector('.pick').addEventListener('click', function () { wordFileKey = w.key; $('w-file').click(); });
-      row.querySelector('.del').addEventListener('click', function () {
-        if (!confirm('Remove the recording made for “' + w.text + '”? It goes back to ' +
-          (H.wordAudio({ cards: deck.cards })[w.key] ? 'its card’s recording.' : 'the computer voice.'))) return;
-        setWord(w.key, null);
-      });
+      if (only && !need(w)) return;
+      var row = wordRow(w, true);
       frag.appendChild(row);
     });
     host.appendChild(frag);
@@ -461,6 +473,29 @@
       host.appendChild(p);
     }
   }
+
+  /* The two words of the card in the form, as currently typed. */
+  function renderCardWords() {
+    var host = $('cardwords');
+    host.innerHTML = '';
+    var seen = {};
+    optionValues().forEach(function (text) {
+      var key = H.wordKey(text);
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      host.appendChild(wordRow({ key: key, text: text.trim() }, false));
+    });
+    if (!host.children.length) {
+      var p = document.createElement('p');
+      p.className = 'hint';
+      p.style.padding = '10px 4px';
+      p.textContent = 'Type the two options above and their words appear here.';
+      host.appendChild(p);
+    }
+  }
+
+  $('f-o1').addEventListener('input', renderCardWords);
+  $('f-o2').addEventListener('input', renderCardWords);
 
   /* ---------------------------------------------------------- publishing */
 
@@ -611,6 +646,7 @@
     renderGroups();
     renderList();
     renderWords();
+    renderCardWords();
     renderStatus();
   }
 

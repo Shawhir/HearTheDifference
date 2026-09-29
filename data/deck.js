@@ -958,5 +958,26 @@ window.HTD_DECK = {
       "answer": "Please fill the cup.",
       "audio": "audio/i/please-fill-the-cup.mp3"
     }
-  ]
+  ],
+  "words": {
+    "hair": "audio/ai/hair.mp3",
+    "eat": "audio/ai/eat.mp3",
+    "it": "audio/ai/it.mp3",
+    "ill": "audio/ai/ill.mp3",
+    "art": "audio/ai/art.mp3",
+    "old": "audio/ai/old.mp3",
+    "ate": "audio/ai/ate.mp3",
+    "i'd": "audio/ai/i-d.mp3",
+    "i ate the cookies": "audio/ai/i-ate-the-cookies.mp3",
+    "her hair smells good": "audio/ai/her-hair-smells-good.mp3",
+    "i can hit perfectly": "audio/ai/i-can-hit-perfectly.mp3",
+    "i can it perfectly": "audio/ai/i-can-it-perfectly.mp3",
+    "the hill child needs help": "audio/ai/the-hill-child-needs-help.mp3",
+    "i study art at school": "audio/ai/i-study-art-at-school.mp3",
+    "dis is my book.": "audio/ai/dis-is-my-book.mp3",
+    "day will help us.": "audio/ai/day-will-help-us.mp3",
+    "dough it rained, we walked.": "audio/ai/dough-it-rained-we-walked.mp3",
+    "though it rained, we walked.": "audio/ai/though-it-rained-we-walked.mp3",
+    "the beat is hard.": "audio/ai/the-beat-is-hard.mp3"
+  }
 };

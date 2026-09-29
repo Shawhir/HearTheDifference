@@ -152,6 +152,8 @@ data/deck.js          the deck: groups + cards, audio referenced by path
 audio/<group>/*.mp3   the recordings
 tools/extract_audio.py  one-shot migration from the old single-file build
 tools/theme-scrape.js   console script: lift another site's look into the tokens above
+tools/make_ai_audio.py  AI stand-in recordings for pair words nobody has recorded yet
+audio/ai/               those stand-ins; audio/words/ holds real recordings made for comparing
 study/                  optional vocabulary & grammar section (see study/README.md)
 ```
 
@@ -338,21 +340,37 @@ history to reproduce the split.
 
 ## Comparing the pair
 
-Once the learner has answered, a button appears under each option to play
-that word, so the two can be heard side by side. Each word uses, in order:
+Once the learner has answered, clicking either word plays it, and a button
+under each option does the same, so the two can be heard side by side. Each
+word uses, in order:
 
 1. a recording made for comparing, in the editor's *Word recordings for
    comparing* section, stored in `data/deck.js` under `words` and published to
-   `audio/words/`;
+   `audio/words/` — or, until someone records the word, an **AI stand-in**
+   under `audio/ai/` (see below), which the button labels *AI voice*;
 2. the recording of the card whose answer is that word;
 3. the device's built-in text-to-speech voice, as a stand-in. The button is
    labelled *computer voice* so it is never mistaken for a real recording, and
    the voice varies by device (a British one that works offline is preferred).
 
 Of the 94 words in the pairs, 75 already play a real recording through
-their cards. The editor section lists the rest (tick *Only words using the
-computer voice*) with **Record** and **Choose file…** on each, and also lets
-any word be given a better take than its card's.
+their cards. The other 19 have AI stand-ins, made by
+`tools/make_ai_audio.py` with Kokoro-82M (Apache-2.0, British voice
+`bf_emma`) run locally. Their pronunciation was checked from the phonemes the
+model is given (*hair* /heə/ against *air*, *Dis* /dɪs/, *Dough* /dəʊ/
+against *Though* /ðəʊ/), and their loudness matched to the existing
+recordings. They are mono MP3 at 64 kbps, 4–14 KB each. Rerun the script
+after adding pairs and it fills only the new gaps; its docstring has the
+setup.
+
+Recording over a stand-in in the editor replaces it. The old
+`audio/ai/<word>.mp3` is then unused and can be deleted.
+
+The editor section lists the words still needing a real recording, with
+**Record** and **Choose file…** on each, and also lets any word be given a
+better take than its card's. The same controls sit on
+every card in the editor, under *Words for comparing*, for that card's two
+words; a recording made there is kept at once, without saving the card.
 
 ```js
 "words": { "hair": "audio/words/hair.mp3" }
@@ -362,5 +380,5 @@ Keys are the word as written, lower-cased, with spaces tidied.
 
 ## Keyboard
 
-`R` replay · `1`/`2` answer · then `A`/`B` to hear each word of the pair, and
+`R` replay · `1`/`2` answer · then click a word, or `A`/`B`, to hear each word of the pair, and
 `1`–`4` to rate (Again / Hard / Good / Easy), or `Space` for Good.
