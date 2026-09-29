@@ -5,6 +5,9 @@ in README.md). Words with no recording of their own and no card recording
 fall back to the device's built-in voice; this script gives them a neural
 voice instead, as a stand-in until a real recording is made in the editor.
 
+It covers each option whole and, for sentences, each of their words, so a
+learner can tap any word of an answered sentence and hear it on its own.
+
 It writes audio/ai/<word>.mp3 and adds each to "words" in data/deck.js. A
 word that already has any recording is left alone, so rerunning it after new
 pairs are added only fills the new gaps. Re-recording a word in the editor
@@ -34,6 +37,13 @@ import numpy as np
 import onnxruntime as ort
 from kokoro_onnx.tokenizer import Tokenizer
 
+# Words the phonemizer reads the wrong way for these pairs, spoken on their
+# own. "lives" defaults to the noun (/laɪvz/, nine lives); the pair "She
+# lives there / She leaves there" needs the verb, with the short i.
+PHONEMES = {
+    'lives': 'lˈɪvz',
+}
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DECK = os.path.join(ROOT, 'data', 'deck.js')
 RATE = 24000
@@ -41,7 +51,7 @@ PREFIX = 'window.HTD_DECK = '
 
 
 def key(text):
-    return re.sub(r'\s+', ' ', text.strip().lower())
+    return re.sub(r'\s+', ' ', text.strip().lower().replace('’', "'").replace('‘', "'"))
 
 
 def slug(text):
@@ -56,16 +66,33 @@ def read_deck():
     return src, start, end, json.loads(src[start:end])
 
 
+def token_key(t):
+    # Same as tokens() in assets/js/deck.js: the word without surrounding
+    # punctuation, so "book." is looked up as "book".
+    return key(re.sub(r"^[^A-Za-z0-9'’‘]+|[^A-Za-z0-9'’‘]+$", '', t))
+
+
 def missing_words(deck):
+    """Each option whole, and each word of a sentence option, that has no
+    recording of its own and no card recording."""
     have = {key(k) for k, v in (deck.get('words') or {}).items() if v}
     have |= {key(c['answer']) for c in deck['cards'] if c.get('audio')}
     out, seen = [], set()
+
+    def add(k, text):
+        if k and k not in have and k not in seen:
+            seen.add(k)
+            out.append(text)
+
     for c in deck['cards']:
         for o in c['options']:
-            k = key(o)
-            if k and k not in have and k not in seen:
-                seen.add(k)
-                out.append(o.strip())
+            add(key(o), o.strip())
+    for c in deck['cards']:
+        for o in c['options']:
+            words = o.split()
+            if len(words) > 1:
+                for w in words:
+                    add(token_key(w), token_key(w))
     return out
 
 
@@ -118,7 +145,7 @@ def main():
     deck.setdefault('words', {})
 
     for text in words:
-        phon = tok.phonemize(text, lang='en-gb')
+        phon = PHONEMES.get(key(text)) or tok.phonemize(text, lang='en-gb')
         ids = tok.tokenize(phon)
         print(f'{text!r:34} /{phon}/')
         if args.dry_run:

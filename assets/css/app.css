@@ -165,3 +165,10 @@ footer{margin-top:54px;border-top:1.5px solid var(--line);padding-top:14px;font-
 .hear small{display:block;margin-top:2px;font-size:10.5px;font-weight:500;color:var(--ink-soft);letter-spacing:.04em}
 .hear small:empty{display:none}
 .hear:disabled{opacity:.5;cursor:default}
+
+/* The words of an answered sentence, each tappable on its own. Those that
+ * differ between the two options carry a solid underline. */
+.opt .tok{border-radius:4px;padding:0 1px;border-bottom:2px dotted var(--line);transition:.12s}
+.opt .tok:hover,.opt .tok:focus-visible{background:var(--accent-soft);outline:none}
+.opt .tok.diff{border-bottom:2.5px solid var(--accent-deep)}
+.opt .tok.playing{background:var(--accent);color:var(--ink)}

@@ -155,7 +155,38 @@
    */
 
   function wordKey(text) {
-    return String(text || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return String(text || '').trim().toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, ' ');
+  }
+
+  /* A sentence split into its words, so each can be heard on its own. Each
+   * token keeps its text as written ("book.") and a key without the
+   * punctuation ("book") for finding its recording. */
+  function tokens(text) {
+    return String(text || '').trim().split(/\s+/).filter(Boolean).map(function (t) {
+      return { text: t, key: wordKey(t.replace(/^[^A-Za-z0-9'’‘]+|[^A-Za-z0-9'’‘]+$/g, '')) };
+    });
+  }
+
+  /* Which tokens of a differ from b: those outside their longest common
+   * run of words. "Her hair smells good" against "Her air smells good"
+   * marks "hair". */
+  function differing(a, b) {
+    var x = tokens(a).map(function (t) { return t.key; });
+    var y = tokens(b).map(function (t) { return t.key; });
+    var L = [];
+    for (var i = 0; i <= x.length; i++) { L.push([]); for (var j = 0; j <= y.length; j++) L[i].push(0); }
+    for (i = x.length - 1; i >= 0; i--) {
+      for (j = y.length - 1; j >= 0; j--) {
+        L[i][j] = x[i] === y[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+      }
+    }
+    var diff = x.map(function () { return true; });
+    for (i = 0, j = 0; i < x.length && j < y.length;) {
+      if (x[i] === y[j]) { diff[i] = false; i++; j++; }
+      else if (L[i + 1][j] >= L[i][j + 1]) i++;
+      else j++;
+    }
+    return diff;
   }
 
   /* AI stand-ins made by tools/make_ai_audio.py live under audio/ai/, until
@@ -176,13 +207,27 @@
     return map;
   }
 
-  /* Every word that appears in a pair, once, in deck order. */
+  /* Everything a learner can play from a card: each option whole, and for
+   * a sentence, each of its words. */
+  function cardWords(card) {
+    var out = [], seen = {};
+    function add(key, text, part) {
+      if (key && !seen[key]) { seen[key] = true; out.push({ key: key, text: text, group: card.group, part: part }); }
+    }
+    card.options.forEach(function (o) { add(wordKey(o), o.trim(), false); });
+    card.options.forEach(function (o) {
+      var ts = tokens(o);
+      if (ts.length > 1) ts.forEach(function (t) { add(t.key, t.key, true); });
+    });
+    return out;
+  }
+
+  /* The same across the deck, once each, in deck order. */
   function pairWords(deck) {
     var seen = {}, out = [];
     (deck.cards || []).forEach(function (c) {
-      c.options.forEach(function (o) {
-        var k = wordKey(o);
-        if (k && !seen[k]) { seen[k] = true; out.push({ key: k, text: o.trim(), group: c.group }); }
+      cardWords(c).forEach(function (w) {
+        if (!seen[w.key]) { seen[w.key] = true; out.push(w); }
       });
     });
     return out;
@@ -359,6 +404,9 @@
     groupsById: groupsById,
     playable: playable,
     wordKey: wordKey,
+    tokens: tokens,
+    differing: differing,
+    cardWords: cardWords,
     isStandIn: isStandIn,
     wordAudio: wordAudio,
     pairWords: pairWords,
