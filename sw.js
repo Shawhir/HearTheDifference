@@ -10,7 +10,14 @@
  *     bulk and rarely change; refreshed in the background after each use.
  *
  * The editor is left alone. Its files are never saved or served from here,
- * so it keeps working exactly as it does without the app.
+ * so it keeps working exactly as it does without the app. The same goes for
+ * the study section's editor.
+ *
+ * The study section (study/) is optional: its pages are saved when the
+ * folder exists and silently skipped when it does not, so deleting the
+ * folder needs no change here. Its pictures are saved as they are viewed
+ * (study/js/cards.js fetches a deck's pictures when it is opened), its
+ * grammar PDFs as soon as the data naming them arrives.
  *
  * Bump VERSION to throw every saved copy away and start again.
  */
@@ -46,8 +53,20 @@ var CORE = [
   'assets/fonts/poppins-latin-ext-700-normal.woff2',
 ];
 
-var EDITOR_ONLY = /\/(editor\.html|assets\/js\/editor\.js|assets\/css\/editor\.css)$/;
-var SAVED_FIRST = /\/(audio|assets\/fonts|assets\/icons)\/|\.(mp3|m4a|ogg|wav|webm|png|svg|woff2)$/;
+/* Study section: saved if present, skipped if not. */
+var STUDY_CORE = [
+  'study/',
+  'study/index.html',
+  'study/cards.html',
+  'study/data/study.js',
+  'study/js/study.js',
+  'study/js/menu.js',
+  'study/js/cards.js',
+  'study/css/study.css',
+];
+
+var EDITOR_ONLY = /\/(editor\.html|assets\/js\/editor\.js|assets\/css\/editor\.css|study\/js\/editor\.js)$/;
+var SAVED_FIRST = /\/(audio|assets\/fonts|assets\/icons|study\/images|study\/audio|study\/grammar)\/|\.(mp3|m4a|ogg|wav|webm|png|svg|webp|jpe?g|gif|pdf|woff2)$/;
 var NETWORK_TIMEOUT_MS = 4000;
 
 function url(path) { return new URL(path, self.registration.scope).href; }
@@ -58,6 +77,32 @@ function audioPaths(deckText) {
   var paths = [], re = /"audio"\s*:\s*"([^"]+)"/g, m;
   while ((m = re.exec(deckText))) paths.push(m[1]);
   return paths;
+}
+
+/* The study data names its grammar sheets as "file" paths relative to
+ * study/. They are small and meant to be read offline, so save them all. */
+function saveStudyFiles(cache, dataText) {
+  var re = /"file"\s*:\s*"([^"]+)"/g, m, paths = [];
+  while ((m = re.exec(dataText))) if (m[1].indexOf('idb:') !== 0) paths.push('study/' + m[1]);
+  return Promise.all(paths.map(function (p) {
+    var u = url(p);
+    return cache.match(u).then(function (hit) {
+      if (hit) return;
+      return fetch(u).then(function (res) { if (res.ok) return cache.put(u, res); }).catch(function () {});
+    });
+  }));
+}
+
+function saveStudy(cache) {
+  return Promise.all(STUDY_CORE.map(function (p) {
+    return fetch(url(p)).then(function (res) {
+      if (!res.ok) return;
+      var copy = res.clone();
+      return cache.put(url(p), res).then(function () {
+        if (p === 'study/data/study.js') return copy.text().then(function (t) { return saveStudyFiles(cache, t); });
+      });
+    }).catch(function () { /* no study section, or offline: skip */ });
+  }));
 }
 
 /* Save any recording the deck names that is not saved yet. Runs at install
@@ -82,6 +127,8 @@ self.addEventListener('install', function (event) {
       return res.text();
     }).then(function (text) {
       return saveRecordings(cache, text);
+    }).then(function () {
+      return saveStudy(cache);
     });
   }).then(function () { return self.skipWaiting(); }));
 });
@@ -106,9 +153,12 @@ function networkFirst(event, key) {
   event.waitUntil(got.then(function (g) {
     if (!g.copy) return;
     return caches.open(VERSION).then(function (cache) {
-      var text = key === url('data/deck.js') ? g.copy.clone().text() : null;
+      var text = key === url('data/deck.js') || key === url('study/data/study.js') ? g.copy.clone().text() : null;
       return cache.put(key, g.copy).then(function () {
-        if (text) return text.then(function (t) { return saveRecordings(cache, t); });
+        if (!text) return;
+        return text.then(function (t) {
+          return key === url('data/deck.js') ? saveRecordings(cache, t) : saveStudyFiles(cache, t);
+        });
       });
     });
   }).catch(function () { /* offline: the saved copy answers below */ }));

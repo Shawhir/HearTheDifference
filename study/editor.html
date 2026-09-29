@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study editor — Hear the Difference</title>
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="icon" href="../assets/icons/cg-favicon-64.png" type="image/png">
+<link rel="stylesheet" href="../assets/css/app.css">
+<link rel="stylesheet" href="../assets/css/editor.css">
+<link rel="stylesheet" href="css/study.css">
+</head>
+<body>
+<div class="wrap wide">
+  <div class="topbar">
+    <div class="brand">Study editor<span class="sep"> · </span><span class="brand-sub">vocabulary &amp; grammar</span></div>
+    <div class="backlink"><a href="index.html">← Study section</a></div>
+  </div>
+
+  <p class="blurb" style="margin-top:22px">Edit the card decks and grammar sheets. Changes are kept as a draft in this browser and the study pages here show them straight away; publishing writes them into the project's <code>study/</code> folder.</p>
+
+  <div class="ebar">
+    <span class="status" id="status">—</span>
+    <div class="controls" style="margin:0">
+      <button class="mini" id="publish">Publish to project…</button>
+      <button class="mini" id="downloadzip">Download changes (.zip)</button>
+      <button class="mini" id="revert">Discard draft</button>
+    </div>
+  </div>
+  <p class="msg" id="topmsg"></p>
+
+  <div class="deckbar">
+    <select id="deck" aria-label="Deck to edit"></select>
+    <button class="mini" id="newdeck-open">+ New deck</button>
+  </div>
+
+  <details class="groups-ed" id="newdeck-box" style="margin:0 0 18px">
+    <summary>New deck</summary>
+    <div class="two" style="margin-top:14px">
+      <div class="field"><label for="nd-title">Title</label><input type="text" id="nd-title" placeholder="The 750 most common words"></div>
+      <div class="field"><label for="nd-kind">Kind</label>
+        <select id="nd-kind">
+          <option value="picture">Picture cards — picture or hint on the front, the word on the back</option>
+          <option value="verb">Verb forms — base form, then past simple (and past participle)</option>
+        </select>
+      </div>
+    </div>
+    <div class="rowbtns" style="margin-top:0"><button class="mini" id="nd-create">Create deck</button></div>
+  </details>
+
+  <details class="groups-ed" id="settings" style="margin:0 0 18px">
+    <summary>Deck settings</summary>
+    <div class="two" style="margin-top:14px">
+      <div class="field"><label for="ds-title">Title</label><input type="text" id="ds-title"></div>
+      <div class="field"><label for="ds-blurb">One-line description</label><input type="text" id="ds-blurb"></div>
+    </div>
+    <div class="field" id="ds-participle-row">
+      <label class="check"><input type="checkbox" id="ds-participle"> Ask for the past participle too</label>
+    </div>
+    <p class="hint" id="ds-kind" style="font-size:12.5px;color:var(--ink-soft)"></p>
+    <div class="rowbtns"><button class="mini danger" id="ds-delete">Delete this deck</button></div>
+  </details>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Cards</h2>
+      <p class="hint" id="listhint"></p>
+      <input class="search" type="search" id="search" placeholder="Filter…" aria-label="Filter cards">
+      <button class="btn btn-next" id="newcard" style="width:100%;margin-bottom:12px">+ New card</button>
+      <div class="cardlist" id="cardlist" role="list"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="formtitle">New card</h2>
+      <form id="cardform" novalidate>
+        <div id="pic-fields">
+          <p class="hint">The front shows the picture — or the hint, when a word has no picture. The back shows the word.</p>
+          <div class="field">
+            <label for="f-word">Word</label>
+            <input type="text" id="f-word" autocomplete="off" placeholder="apple">
+          </div>
+          <div class="field">
+            <label for="f-hint">Hint — a translation, or a sentence with ___ for the word</label>
+            <input type="text" id="f-hint" autocomplete="off" placeholder="une pomme">
+          </div>
+          <div class="field">
+            <label>Picture</label>
+            <div class="picbox" id="picbox">
+              <img id="p-img" alt="" hidden>
+              <span class="name" id="p-name">No picture — drop one here, or choose a file</span>
+              <button type="button" class="mini" id="p-pick">Choose picture…</button>
+              <button type="button" class="mini danger" id="p-clear">Remove</button>
+              <input type="file" id="p-file" accept="image/*" hidden>
+            </div>
+          </div>
+          <div class="field">
+            <label>Recording (optional)</label>
+            <div class="audiobox" id="audiobox">
+              <button type="button" class="mini" id="a-play">▶ Play</button>
+              <button type="button" class="mini" id="a-record">● Record</button>
+              <button type="button" class="mini" id="a-pick">Choose file…</button>
+              <input type="file" id="a-file" accept="audio/*" hidden>
+              <span class="name" id="a-name">No recording</span>
+              <button type="button" class="mini danger" id="a-clear">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="verb-fields">
+          <p class="hint">Several accepted spellings go in one box, separated by a slash: <i>learned / learnt</i>.</p>
+          <div class="field">
+            <label for="f-base">Base form</label>
+            <input type="text" id="f-base" autocomplete="off" placeholder="go">
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="f-past">Past simple</label>
+              <input type="text" id="f-past" autocomplete="off" placeholder="went">
+            </div>
+            <div class="field" id="f-participle-row">
+              <label for="f-participle">Past participle</label>
+              <input type="text" id="f-participle" autocomplete="off" placeholder="gone">
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-meaning">Meaning (optional)</label>
+            <input type="text" id="f-meaning" autocomplete="off" placeholder="aller">
+          </div>
+        </div>
+
+        <p class="msg" id="formmsg"></p>
+        <div class="rowbtns">
+          <button type="submit" class="btn btn-primary" style="font-size:15px;padding:12px 22px">Save card</button>
+          <button type="button" class="mini" id="cancel">Clear form</button>
+          <button type="button" class="mini danger" id="delete">Delete card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <details class="groups-ed importbox" id="importbox">
+    <summary>Import from a spreadsheet</summary>
+    <p class="hint" style="margin-top:10px" id="importhint"></p>
+    <div class="field" style="margin-top:10px">
+      <label for="imp-text">Paste rows here (copy them straight out of Excel, Numbers or Google Sheets), or load a .csv</label>
+      <textarea id="imp-text" spellcheck="false"></textarea>
+    </div>
+    <div class="rowbtns" style="margin-top:0">
+      <button type="button" class="mini" id="imp-csv">Load .csv…</button>
+      <input type="file" id="imp-csvfile" accept=".csv,.tsv,.txt,text/csv,text/plain" hidden>
+      <button type="button" class="mini" id="imp-pics">Add pictures…</button>
+      <input type="file" id="imp-picfiles" accept="image/*" multiple hidden>
+      <span class="savenote" id="imp-picnote"></span>
+    </div>
+    <div class="rowbtns"><button type="button" class="btn btn-next" id="imp-go">Import into this deck</button></div>
+    <div class="report" id="imp-report"></div>
+  </details>
+
+  <details class="groups-ed" id="grammarbox">
+    <summary>Grammar sheets</summary>
+    <p class="hint" style="margin-top:10px;font-size:12.5px;color:var(--ink-soft)">Each sheet is a PDF with a title and a line of description. They are listed in this order under the decks.</p>
+    <div id="sheetlist"></div>
+    <div class="rowbtns"><button type="button" class="mini" id="newsheet">+ New sheet</button></div>
+    <input type="file" id="sheetfile" accept="application/pdf,.pdf" hidden>
+  </details>
+
+  <footer>Drafts live in this browser only: the text in localStorage, pictures, recordings and PDFs in IndexedDB. Publish to write them into <code>study/data/study.js</code>, <code>study/images/</code>, <code>study/audio/</code> and <code>study/grammar/</code>.</footer>
+</div>
+
+<audio id="preview"></audio>
+<script src="data/study.js"></script>
+<script src="../assets/js/deck.js"></script>
+<script src="js/study.js"></script>
+<script src="js/editor.js"></script>
+</body>
+</html>
