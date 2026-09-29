@@ -364,8 +364,11 @@ after adding pairs and it fills only the new gaps; its docstring has the
 setup.
 
 Recording over a stand-in in the editor replaces it. The old
-`audio/ai/<word>.mp3` is then unused and can be deleted. The editor section lists the words still needing a real recording with **Record** and **Choose file…** on each, and also lets
-any word be given a better take than its card's. The same controls sit on
+`audio/ai/<word>.mp3` is then unused and can be deleted.
+
+The editor section lists the words still needing a real recording, with
+**Record** and **Choose file…** on each, and also lets any word be given a
+better take than its card's. The same controls sit on
 every card in the editor, under *Words for comparing*, for that card's two
 words; a recording made there is kept at once, without saving the card.
 
