@@ -10,7 +10,7 @@ window.STUDY_DATA = {
     {
       "id": "everyday-words",
       "kind": "picture",
-      "title": "Everyday words",
+      "title": "Most common words",
       "blurb": "See the picture, say the word, then check.",
       "cards": [
         { "id": "w-apple", "word": "apple", "hint": "une pomme", "image": "images/everyday-words/apple.svg", "audio": null },
@@ -42,6 +42,41 @@ window.STUDY_DATA = {
         { "id": "v-buy", "base": "buy", "past": "bought", "participle": "bought", "meaning": "acheter" },
         { "id": "v-write", "base": "write", "past": "wrote", "participle": "written", "meaning": "écrire" },
         { "id": "v-learn", "base": "learn", "past": "learned / learnt", "participle": "learned / learnt", "meaning": "apprendre" }
+      ]
+    },
+    {
+      "id": "giulio",
+      "kind": "picture",
+      "title": "Giulio",
+      "blurb": "",
+      "cards": [
+        { "id": "w-muo36pu4-xgjb8", "word": "to look", "hint": "to have a butchers at something", "image": null, "audio": null }
+      ]
+    },
+    {
+      "id": "ludo",
+      "kind": "picture",
+      "title": "Ludo",
+      "blurb": "",
+      "cards": [
+        { "id": "w-muqmt8a3-c3smn", "word": "I emptied the bottle", "hint": "J'ai vidé la bouteille", "image": null, "audio": null },
+        { "id": "w-muqsutgd-t29tp", "word": "He fills the cup", "hint": "Il remplit la tasse", "image": null, "audio": null },
+        { "id": "w-muqsw3sd-y5e6l", "word": "They removed the article", "hint": "Ils on enlevé l'article", "image": null, "audio": null },
+        { "id": "w-muqsxdez-dz2r7", "word": "I'll eat the leftovers tomorrow", "hint": "Je mangerai les restes demain", "image": null, "audio": null },
+        { "id": "w-muqsyjh9-jjgme", "word": "the kitchen sink", "hint": "l'évier", "image": null, "audio": null },
+        { "id": "w-muqsyykd-e8c30", "word": "he flicked the switch", "hint": "il a actionné l'interrupteur", "image": null, "audio": null },
+        { "id": "w-muqszt6v-wyoh7", "word": "For the starter I'll have the salmon", "hint": "En entrés je prendrai le saumon", "image": null, "audio": null },
+        { "id": "w-muqt0br3-1xedw", "word": "he poured the coffee into the sink", "hint": "il a versé le café dans l'évier", "image": null, "audio": null },
+        { "id": "w-muqt0lvb-41tp1", "word": "all of a sudden", "hint": "tout à coup", "image": null, "audio": null },
+        { "id": "w-muqt0t5h-ngqca", "word": "knight", "hint": "chevallier", "image": null, "audio": null },
+        { "id": "w-muqt16c8-wyqhd", "word": "he boiled some water then he poured it in the sink", "hint": "il a versé de l'eau puis il l'a versé dans l'évier", "image": null, "audio": null },
+        { "id": "w-muqt2uof-r11kb", "word": "spread", "hint": "étaler", "image": null, "audio": null },
+        { "id": "w-muqt3kdo-wqsdp", "word": "we didn't have a housewarming party", "hint": "on n'a pas fait de crémaillère", "image": null, "audio": null },
+        { "id": "w-muqt3smz-3nvq7", "word": "I'm in a hurry", "hint": "Je suis pressé", "image": null, "audio": null },
+        { "id": "w-muqt4b15-c7iva", "word": "monte l'échelle!", "hint": "go up the ladder!", "image": null, "audio": null },
+        { "id": "w-muqt4itz-vrnhh", "word": "turn off the tap!", "hint": "ferme le robinet!", "image": null, "audio": null },
+        { "id": "w-muqt7s2f-54qi1", "word": "screw the screw with a screwdriver", "hint": "visser le vis avec une tournevisse", "image": null, "audio": null },
+        { "id": "w-muqt80zf-5h9en", "word": "bien que", "hint": "although", "image": null, "audio": null }
       ]
     }
   ],
